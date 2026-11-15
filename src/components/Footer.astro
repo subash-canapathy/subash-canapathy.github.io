@@ -1,0 +1,80 @@
+---
+/** Shared footer: identical on every page (PLAN §14.1 item 5, DESIGN.md › Components). */
+import { getProfile } from '../lib/profile';
+import { url } from '../lib/url';
+import Button from './Button.astro';
+
+const profile = await getProfile();
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" id="contact">
+	<div class="container footer__top">
+		<div class="footer__pitch">
+			<p class="footer__line">Open to conversations about technical leadership roles.</p>
+			<Button variant="accent" href={profile.links.linkedin}>Get in touch</Button>
+		</div>
+		<ul class="footer__links">
+			<li><a href={url('/photography/')}>Photography</a></li>
+			<li><a href={url('/rss.xml')}>RSS</a></li>
+			<li><a href={profile.links.linkedin}>LinkedIn</a></li>
+			<li><a href={profile.links.github}>GitHub</a></li>
+		</ul>
+	</div>
+	<p class="container footer__copy">© {year} {profile.name}</p>
+</footer>
+
+<style>
+	.site-footer {
+		background: var(--foot-bg);
+		color: var(--foot-ink);
+		border-top: 1px solid var(--foot-border);
+	}
+	.footer__top {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+		padding-block: 44px 28px;
+	}
+	.footer__pitch {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 20px;
+		flex: 1 1 520px;
+	}
+	.footer__line {
+		font-family: var(--font-serif-stack);
+		font-size: 22px;
+		line-height: 1.4;
+		color: var(--foot-ink);
+	}
+	.footer__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 24px;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 15px;
+	}
+	.footer__links a {
+		color: var(--foot-ink-2);
+		display: inline-block;
+		padding-block: 10px;
+	}
+	.footer__links a:hover {
+		color: var(--foot-ink);
+	}
+	.footer__copy {
+		padding-bottom: 32px;
+		font-size: 13px;
+		color: var(--foot-muted);
+	}
+	/* Focus ring on the dark band uses the light footer ink. */
+	.site-footer :focus-visible {
+		outline-color: var(--foot-ink);
+	}
+</style>

@@ -1,0 +1,22 @@
+# Page-level profile content (PLAN §8a). Feeds the Home hero, the Profile page and the resume PDF.
+# Phase 1 holds only what is final today; the rest (summary, impact, working style, education,
+# patents, …) is added in Phase 4. Edit, push: the build checks every field.
+
+name: Subash Canapathy
+title: Partner Director of Engineering # exactly as held
+employer: Microsoft
+
+# links:
+#   linkedin: "https://www.linkedin.com/in/…"   # PM to supply
+#   github: "https://github.com/subash-canapathy"
+#   instagram: "https://www.instagram.com/…"
+
+tagline: "Engineering Leader, AI Change Agent, & a forever humanist."
+tagline_highlight: "a forever humanist."
+
+home_intro: >-
+  Engineering leader with 20+ years building enterprise-scale distributed systems, the last three on
+  building inferred intelligence and analytics for M365 Copilot. I lead organizational AI
+  transformations and build psychologically safe, customer-obsessed teams.
+
+earlier_roles_before: 2016

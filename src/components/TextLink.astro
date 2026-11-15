@@ -1,0 +1,33 @@
+---
+/** Text link with arrow: "All articles →". Yellow rounded 3px bar; hover deepens to caret gold. */
+interface Props {
+	href: string;
+}
+const { href } = Astro.props;
+---
+
+<a class="text-link" href={href}><slot /> →<span class="text-link__bar" aria-hidden="true"></span></a>
+
+<style>
+	.text-link {
+		position: relative;
+		display: inline-block;
+		font-size: 15px;
+		line-height: 1.25;
+		padding-bottom: 5px;
+		color: var(--ink);
+	}
+	.text-link__bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+		transition: background-color var(--t-fast);
+	}
+	.text-link:hover .text-link__bar {
+		background: var(--link-hover-bar);
+	}
+</style>

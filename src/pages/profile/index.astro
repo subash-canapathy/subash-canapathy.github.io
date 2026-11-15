@@ -1,0 +1,63 @@
+---
+/** Profile (PLAN §14.3). Skeleton for Phase 1: masthead basics only; the rest comes from the §8a files in Phase 4. */
+import Portrait from '../../components/Portrait.astro';
+import Base from '../../layouts/Base.astro';
+import { getProfile } from '../../lib/profile';
+
+const profile = await getProfile();
+---
+
+<Base title="Profile" description={`${profile.name}, ${profile.title} at ${profile.employer}.`}>
+	<div class="container page">
+		<section class="masthead" aria-labelledby="profile-name">
+			<div class="masthead__text">
+				<h1 class="masthead__name" id="profile-name">{profile.name}</h1>
+				<p class="masthead__title">{profile.title}, {profile.employer}</p>
+				{profile.summary?.map((para) => <p class="lede">{para}</p>)}
+			</div>
+			<Portrait size={200} phoneSize={88} />
+		</section>
+		<p class="empty">
+			Impact, how I work, featured work, the experience timeline and the resume PDF arrive in Phase 4.
+		</p>
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-block: 48px 64px;
+		display: flex;
+		flex-direction: column;
+		gap: 40px;
+	}
+	.masthead {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 40px;
+	}
+	.masthead__text {
+		flex: 1 1 520px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.masthead__name {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 56px;
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+	}
+	.masthead__title {
+		font-size: 20px;
+		font-weight: 500;
+		color: var(--ink);
+	}
+	@media (max-width: 720px) {
+		.masthead__name {
+			font-size: 40px;
+		}
+	}
+</style>

@@ -1,0 +1,57 @@
+---
+/**
+ * Pill: filters (tag pills on Articles) and competency pills only. List tags are plain grey text.
+ * Renders <a> when `href` is set. `selected` = filled pill for the active tag filter.
+ */
+interface Props {
+	href?: string;
+	selected?: boolean;
+	size?: 'md' | 'sm';
+}
+const { href, selected = false, size = 'md' } = Astro.props;
+const classes = ['pill', `pill--${size}`, { 'is-selected': selected }];
+---
+
+{
+	href ? (
+		<a class:list={classes} href={href} aria-current={selected ? 'true' : undefined}>
+			<slot />
+		</a>
+	) : (
+		<span class:list={classes}>
+			<slot />
+		</span>
+	)
+}
+
+<style>
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		min-height: 36px;
+		padding: 0 14px;
+		border: 1px solid var(--line-control);
+		border-radius: var(--radius-pill);
+		background: var(--card);
+		color: var(--ink);
+		font-size: 14px;
+		line-height: 1;
+		white-space: nowrap;
+		transition:
+			background-color var(--t-fast),
+			border-color var(--t-fast);
+	}
+	.pill--sm {
+		min-height: 34px;
+		padding: 0 12px;
+	}
+	a.pill:hover {
+		background: var(--surface);
+		border-color: var(--muted);
+	}
+	.pill.is-selected {
+		background: var(--btn-bg);
+		border-color: var(--btn-bg);
+		color: var(--btn-fg);
+	}
+</style>

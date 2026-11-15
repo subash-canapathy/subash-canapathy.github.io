@@ -1,0 +1,48 @@
+---
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { url } from '../lib/url';
+
+interface Props {
+	title?: string;
+	description?: string;
+	noindex?: boolean;
+}
+const { title, description = SITE_DESCRIPTION, noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#FBFAF7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)" />
+
+<!-- Apply the saved theme before first paint (no flash). -->
+<script is:inline>
+	try {
+		const t = localStorage.getItem('theme');
+		if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+	} catch (e) {}
+</script>
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="subash.org" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+
+<link rel="sitemap" href={url('/sitemap-index.xml')} />
+<link rel="alternate" type="application/rss+xml" title="Subash Canapathy · Articles" href={url('/rss.xml')} />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Self-hosted fonts. Preload only the two faces above the fold. -->
+<Font cssVariable="--font-serif" preload={[{ weight: '500', style: 'normal' }]} />
+<Font cssVariable="--font-sans" preload={[{ weight: '400', style: 'normal' }]} />

@@ -1,0 +1,19 @@
+---
+/**
+ * Hero highlighter (DESIGN.md › Tokens: highlighter).
+ * Light: flat yellow band on the lower 40%. Dark: drawn marker-pen stroke with ink text.
+ * The tokens switch it; this component only applies them.
+ */
+---
+
+<span class="hl"><slot /></span>
+
+<style>
+	.hl {
+		background: var(--hl-bg);
+		color: var(--hl-ink);
+		padding: var(--hl-pad);
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
+	}
+</style>

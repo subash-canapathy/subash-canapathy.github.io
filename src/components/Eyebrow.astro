@@ -1,0 +1,23 @@
+---
+/** Eyebrow label: Inter 600 / 12 caps +0.08em, muted (primary tag, kickers). */
+interface Props {
+	as?: 'p' | 'span' | 'div';
+}
+const { as: Tag = 'p' } = Astro.props;
+---
+
+<Tag class="eyebrow"><slot /></Tag>
+
+<style>
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+</style>

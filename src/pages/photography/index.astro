@@ -1,0 +1,93 @@
+---
+/**
+ * Photography (PLAN §6). Skeleton for Phase 1. No big page title: the page opens on Albums.
+ * Headings and the Instagram button sit on the 1120 edges; only the photo grids widen to 1200.
+ */
+import Button from '../../components/Button.astro';
+import Base from '../../layouts/Base.astro';
+import { getProfile } from '../../lib/profile';
+
+const profile = await getProfile();
+const albums = ['Vancouver', 'Travel', 'Off-Roading', 'Monochrome'];
+---
+
+<Base title="Photography" description="Street and travel photography by Subash Canapathy.">
+	<div class="container head">
+		<h1 class="section-title">Albums</h1>
+		<Button variant="secondary" icon="instagram" href={profile.links.instagram}>Instagram</Button>
+	</div>
+	<div class="container container--photos">
+		<ul class="albums">
+			{
+				albums.map((name) => (
+					<li class="album">
+						<div class="album__cover" aria-hidden="true" />
+						<p class="album__title">
+							{name}
+							<span aria-hidden="true">→</span>
+						</p>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+	<div class="container rule">
+		<h2 class="section-title">Camera roll</h2>
+	</div>
+	<div class="container container--photos">
+		<p class="empty">Albums, the camera roll and the photo viewer arrive in Phase 5.</p>
+	</div>
+	<div class="spacer"></div>
+</Base>
+
+<style>
+	.head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-block: 40px 24px;
+	}
+	.albums {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 24px;
+	}
+	.album {
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--card);
+		overflow: hidden;
+	}
+	.album__cover {
+		aspect-ratio: 4 / 3;
+		background: var(--surface);
+	}
+	.album__title {
+		display: flex;
+		justify-content: space-between;
+		padding: 14px 16px;
+		font-family: var(--font-serif-stack);
+		font-size: 20px;
+		font-weight: 500;
+	}
+	.rule {
+		margin-top: 48px;
+	}
+	.rule h2 {
+		border-top: 1px solid var(--line-section);
+		padding-block: 32px 20px;
+	}
+	.spacer {
+		height: 64px;
+	}
+	@media (max-width: 900px) {
+		.albums {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

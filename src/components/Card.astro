@@ -1,0 +1,39 @@
+---
+/**
+ * Card container.
+ *  surface  featured / pinned article cards (surface fill, row line, 6px radius)
+ *  white    album and related cards (card fill, row line)
+ */
+interface Props {
+	variant?: 'surface' | 'white';
+	as?: 'article' | 'div' | 'section';
+	class?: string;
+}
+const { variant = 'surface', as: Tag = 'article', class: className } = Astro.props;
+---
+
+<Tag class:list={['card', `card--${variant}`, className]}>
+	<slot />
+</Tag>
+
+<style>
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 28px 32px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+	}
+	.card--surface {
+		background: var(--surface);
+	}
+	.card--white {
+		background: var(--card);
+	}
+	@media (max-width: 720px) {
+		.card {
+			padding: 22px 20px;
+		}
+	}
+</style>

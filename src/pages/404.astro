@@ -1,0 +1,39 @@
+---
+/** Custom 404. Old Medium wildcard paths (e.g. /tagged/*) can't be redirected on GitHub Pages, so this links to the article list (PLAN §9). */
+import Button from '../components/Button.astro';
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="Page not found" noindex>
+	<div class="container page">
+		<p class="code">404</p>
+		<h1 class="page-title">This page isn't here.</h1>
+		<p class="lede">If you followed an old link to an article, it has moved. Every article is on the articles page.</p>
+		<div class="ctas">
+			<Button variant="primary" href={url('/articles/')}>All articles</Button>
+			<Button variant="secondary" href={url('/')}>Home</Button>
+		</div>
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-block: 72px 96px;
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+	.code {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		color: var(--muted);
+	}
+	.ctas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		padding-top: 6px;
+	}
+</style>

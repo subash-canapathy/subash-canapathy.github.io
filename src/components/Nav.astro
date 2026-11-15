@@ -1,0 +1,232 @@
+---
+/**
+ * Sticky primary nav (PLAN §4, DESIGN.md › Nav).
+ * - Links in ink; current page = weight 500 + 3px rounded yellow bar.
+ * - Hover = the same bar element in the section-line colour, fading in, so nothing moves.
+ *   The current page's bar stays yellow on hover.
+ * - Theme toggle on every page.
+ * - Phones (≤720px): mark + menu button. The open-menu state is not designed yet (DESIGN.md › Open);
+ *   this is a plain stacked list until it is.
+ */
+import { NAV } from '../consts';
+import { isCurrent, url } from '../lib/url';
+import NavMark from './NavMark.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+const pathname = Astro.url.pathname;
+const items = NAV.map((item) => {
+	const href = url(item.href);
+	return { ...item, href, current: isCurrent(href, pathname) };
+});
+---
+
+<header class="site-header" data-site-header>
+	<nav class="nav container" aria-label="Primary">
+		<a class="nav__home" href={url('/')} aria-label="subash.org home">
+			<NavMark />
+		</a>
+
+		<div class="nav__links">
+			{
+				items.map((item) => (
+					<a
+						class:list={['nav__link', { 'is-current': item.current }]}
+						href={item.href}
+						aria-current={item.current ? 'page' : undefined}
+					>
+						{item.label}
+						<span class="nav__bar" aria-hidden="true" />
+					</a>
+				))
+			}
+			<ThemeToggle />
+		</div>
+
+		<div class="nav__phone">
+			<ThemeToggle />
+			<button
+				type="button"
+				class="nav__menu-btn"
+				aria-expanded="false"
+				aria-controls="phone-menu"
+				data-menu-button
+			>
+				<span class="visually-hidden">Menu</span>
+				<svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+				<svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+			</button>
+		</div>
+	</nav>
+
+	<div class="phone-menu container" id="phone-menu" hidden data-menu>
+		<ul>
+			{
+				items.map((item) => (
+					<li>
+						<a
+							class:list={['phone-menu__link', { 'is-current': item.current }]}
+							href={item.href}
+							aria-current={item.current ? 'page' : undefined}
+						>
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</header>
+
+<script>
+	// Soft shadow once the page scrolls; phone menu open/close.
+	const header = document.querySelector<HTMLElement>('[data-site-header]');
+	if (header) {
+		const onScroll = () => header.toggleAttribute('data-scrolled', window.scrollY > 0);
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+
+		const button = header.querySelector<HTMLButtonElement>('[data-menu-button]');
+		const menu = header.querySelector<HTMLElement>('[data-menu]');
+		if (button && menu) {
+			const setOpen = (open: boolean) => {
+				button.setAttribute('aria-expanded', String(open));
+				menu.hidden = !open;
+			};
+			button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+					setOpen(false);
+					button.focus();
+				}
+			});
+			window.matchMedia('(min-width: 721px)').addEventListener('change', (e) => {
+				if (e.matches) setOpen(false);
+			});
+		}
+	}
+</script>
+
+<style>
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background: var(--bg);
+		transition: box-shadow var(--t-fast);
+	}
+	.site-header[data-scrolled] {
+		box-shadow: var(--nav-shadow);
+	}
+
+	.nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-block: 22px;
+	}
+
+	.nav__home {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--control-h);
+	}
+
+	.nav__links {
+		display: flex;
+		align-items: center;
+		gap: 28px;
+		font-size: 15px;
+	}
+
+	.nav__link {
+		position: relative;
+		color: var(--ink);
+		padding: 10px 0 7px;
+		border-bottom: 3px solid transparent;
+	}
+	.nav__link.is-current {
+		font-weight: 500;
+	}
+
+	/* One bar element for both states: same height, same position. */
+	.nav__bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -3px;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		background: var(--line-section);
+		opacity: 0;
+		transition: opacity var(--t-fast);
+	}
+	.nav__link:hover .nav__bar,
+	.nav__link:focus-visible .nav__bar {
+		opacity: 1;
+	}
+	.nav__link.is-current .nav__bar {
+		background: var(--yellow);
+		opacity: 1;
+	}
+
+	.nav__phone {
+		display: none;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.nav__menu-btn {
+		width: var(--control-h);
+		height: var(--control-h);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: none;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.nav__menu-btn .icon-close,
+	.nav__menu-btn[aria-expanded='true'] .icon-open {
+		display: none;
+	}
+	.nav__menu-btn[aria-expanded='true'] .icon-close {
+		display: block;
+	}
+
+	.phone-menu ul {
+		list-style: none;
+		margin: 0;
+		padding: 0 0 12px;
+	}
+	.phone-menu__link {
+		display: flex;
+		align-items: center;
+		min-height: 48px;
+		border-top: 1px solid var(--line);
+		font-size: 17px;
+		color: var(--ink);
+	}
+	.phone-menu__link.is-current {
+		font-weight: 500;
+	}
+
+	@media (max-width: 720px) {
+		.nav {
+			padding-block: 12px;
+		}
+		.nav__links {
+			display: none;
+		}
+		.nav__phone {
+			display: flex;
+		}
+	}
+	@media (min-width: 721px) {
+		.phone-menu {
+			display: none;
+		}
+	}
+</style>

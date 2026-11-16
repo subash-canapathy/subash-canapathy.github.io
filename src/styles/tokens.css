@@ -78,8 +78,7 @@
 	--frame-paper: #fbfaf7;
 	--frame-ink: #1a1917;
 
-	/* Nav bar shadow (once the page scrolls) */
-	--nav-shadow: 0 1px 0 rgba(26, 25, 23, 0.06), 0 8px 18px -12px rgba(26, 25, 23, 0.28);
+	/* Nav bar shadow: theme-keyed below (box-shadow can't use light-dark()) */
 
 	/* Type */
 	--font-serif-stack: var(--font-serif, 'Newsreader'), Georgia, serif;
@@ -150,12 +149,15 @@
 	--hl-ink: inherit;
 	--hl-pad: 0 2px;
 	--portrait-shadow: none;
+	--nav-shadow: 0 1px 0 rgba(26, 25, 23, 0.06), 0 8px 18px -12px rgba(26, 25, 23, 0.28);
 }
 [data-theme='dark'] {
 	--hl-bg: var(--hl-marker);
 	--hl-ink: #1a1917;
 	--hl-pad: 0.04em 0.34em 0.06em;
 	--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
+	/* Dark: a faint light hairline plus a deeper black falloff, so the edge reads on near-black paper. */
+	--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']) {
@@ -163,5 +165,6 @@
 		--hl-ink: #1a1917;
 		--hl-pad: 0.04em 0.34em 0.06em;
 		--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
+		--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
 	}
 }

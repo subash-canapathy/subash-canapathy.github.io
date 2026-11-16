@@ -92,11 +92,6 @@ const year = new Date().getFullYear();
 <script>
 	const header = document.querySelector<HTMLElement>('[data-site-header]');
 	if (header) {
-		// Soft shadow once the page scrolls.
-		const onScroll = () => header.toggleAttribute('data-scrolled', window.scrollY > 0);
-		onScroll();
-		window.addEventListener('scroll', onScroll, { passive: true });
-
 		const button = header.querySelector<HTMLButtonElement>('[data-menu-button]');
 		const menu = header.querySelector<HTMLElement>('[data-menu]');
 		if (button && menu) {
@@ -126,10 +121,7 @@ const year = new Date().getFullYear();
 		top: 0;
 		z-index: 10;
 		background: var(--bg);
-		transition: box-shadow var(--t-fast);
-	}
-	.site-header[data-scrolled] {
-		box-shadow: var(--nav-shadow);
+		box-shadow: var(--nav-shadow); /* always on, from first paint (light and dark keyed in tokens.css) */
 	}
 	:global(html.menu-open) {
 		overflow: hidden;

@@ -3,16 +3,39 @@
  * The resume, as a print page. Not linked and not indexed: after the site is built,
  * scripts/make-resume-pdf.mjs prints this page to /SubashCanapathy-Resume.pdf and removes it.
  * Same content files as the Profile page, in a tighter cut.
+ *
+ * Layout adapted from mnjul/html-resume (https://github.com/mnjul/html-resume, Apache-2.0):
+ * a timeline main column (dates · dot · details) beside a shaded sidebar, Open Sans Light and
+ * Source Code Pro. Rewritten for this site's data; runs to more than one page, with the sidebar
+ * shading on every page. See README › "The resume PDF".
  */
 import { Font } from 'astro:assets';
-import { dateRange, getCareer, monthYear } from '../../../lib/profile';
-import '../../../styles/tokens.css';
+import { getCareer } from '../../../lib/profile';
 
 const { profile, roles, companyOf, employerOf } = await getCareer();
-const main = roles.filter((r) => r.data.resume.include && Number(r.data.start.slice(0, 4)) >= profile.earlier_roles_before);
-const earlier = roles.filter((r) => r.data.resume.include && Number(r.data.start.slice(0, 4)) < profile.earlier_roles_before);
+const included = roles.filter((r) => r.data.resume.include);
+const main = included.filter((r) => Number(r.data.start.slice(0, 4)) >= profile.earlier_roles_before);
+const earlier = included.filter((r) => Number(r.data.start.slice(0, 4)) < profile.earlier_roles_before);
+
 const short = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
 const realLinkedin = !/linkedin\.com\/?$/.test(profile.links.linkedin);
+const year = (ym: string) => ym.slice(0, 4);
+const place = (r: (typeof roles)[number]) =>
+	companyOf(r).id !== employerOf(r).id ? `${employerOf(r).name} · ${companyOf(r).name}` : employerOf(r).name;
+const eduYears = (y?: string) => (y ?? '').split(/\s*[–-]\s*/).filter(Boolean);
+
+// Small inline icons (Tabler-style outlines, 24-unit grid), in place of the template's Font Awesome.
+const ICON = {
+	work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
+	school: '<path d="M22 9 12 4 2 9l10 5 10-5Z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/>',
+	patent: '<circle cx="12" cy="9" r="6"/><path d="m9 14-2 7 5-3 5 3-2-7"/>',
+	pin: '<path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/>',
+	globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/>',
+	linkedin: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 11v5M8 8v.01M12 16v-5M16 16v-3a2 2 0 0 0-4 0"/>',
+	code: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>',
+} as const;
+const icon = (name: keyof typeof ICON) =>
+	`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[name]}</svg>`;
 ---
 
 <!doctype html>
@@ -21,139 +44,230 @@ const realLinkedin = !/linkedin\.com\/?$/.test(profile.links.linkedin);
 		<meta charset="utf-8" />
 		<meta name="robots" content="noindex" />
 		<title>{profile.name} · Resume</title>
-		<Font cssVariable="--font-serif" />
-		<Font cssVariable="--font-sans" />
+		<Font cssVariable="--font-resume-sans" />
+		<Font cssVariable="--font-resume-mono" />
 	</head>
 	<body>
-		<header>
-			<h1>{profile.name}</h1>
-			<p class="title">{profile.title}, {profile.employer}</p>
-			<p class="contact">
-				{[profile.location, 'subash.org', realLinkedin && short(profile.links.linkedin), short(profile.links.github)].filter(Boolean).join('  ·  ')}
-			</p>
-		</header>
+		<main id="main">
+			<header id="title">
+				<h1>{profile.name}</h1>
+				<p class="subtitle">{profile.title}, {profile.employer}</p>
+			</header>
 
-		{
-			profile.summary.length > 0 && (
-				<section>
-					<h2>Summary</h2>
-					{profile.summary.map((p) => <p>{p}</p>)}
-				</section>
-			)
-		}
-
-		{
-			profile.impact.length > 0 && (
-				<section>
-					<h2>Key achievements</h2>
-					<ul class="impact">
-						{profile.impact.map((m) => (
-							<li>
-								<strong>{m.value}</strong> {m.label}
-							</li>
-						))}
-					</ul>
-					{profile.ai_transformation && <p class="ai">{profile.ai_transformation.text}</p>}
-				</section>
-			)
-		}
-
-		<section>
-			<h2>Experience</h2>
 			{
-				main.map((r) => (
-					<div class="role">
-						<div class="role__head">
-							<p>
-								<strong>{r.data.title}</strong>, {employerOf(r).name}
-								{companyOf(r).id !== employerOf(r).id && ` (${companyOf(r).name})`}
-							</p>
-							<p class="dates">{dateRange(r.data.start, r.data.end)}</p>
-						</div>
-						<p class="scope">
-							{r.data.scope}
-							{r.data.location && ` · ${r.data.location}`}
-						</p>
-						<ul>
-							<li>{r.data.outcome}</li>
-							{(r.data.resume.bullets ?? []).map((b) => <li>{b}</li>)}
-						</ul>
-					</div>
-				))
-			}
-			{
-				earlier.length > 0 && (
-					<ul class="earlier">
-						{earlier.map((r) => (
-							<li>
-								<span>
-									<strong>{r.data.title}</strong>, {r.data.scope}
-									{r.data.location && ` · ${r.data.location}`}
-								</span>
-								<span class="dates">{dateRange(r.data.start, r.data.end)}</span>
-							</li>
+				profile.summary.length > 0 && (
+					<section class="intro" aria-label="Summary">
+						{profile.summary.map((p) => (
+							<p>{p}</p>
 						))}
-					</ul>
+					</section>
 				)
 			}
-		</section>
 
-		{
-			Object.keys(profile.competencies).length > 0 && (
-				<section>
-					<h2>Competencies</h2>
-					{Object.entries(profile.competencies).map(([group, items]) => (
-						<p class="comp">
-							<strong>{group}:</strong> {items.join(', ')}
-						</p>
-					))}
-				</section>
-			)
-		}
+			<section class="main-block">
+				<h2><Fragment set:html={icon('work')} /> Experience</h2>
+				{
+					main.map((r) => (
+						<section class="blocks">
+							<div class="date">
+								<span>{year(r.data.start)}</span>
+								<span>{r.data.end ? year(r.data.end) : 'Present'}</span>
+							</div>
+							<div class="decorator" />
+							<div class="details">
+								<header>
+									<h3>{r.data.title}</h3>
+									<span class="place">{place(r)}</span>
+									{r.data.location && (
+										<span class="location">
+											<Fragment set:html={icon('pin')} />
+											{r.data.location}
+										</span>
+									)}
+								</header>
+								<p class="scope">{r.data.scope}</p>
+								<ul>
+									<li>{r.data.outcome}</li>
+									{(r.data.resume.bullets ?? []).map((b) => (
+										<li>{b}</li>
+									))}
+								</ul>
+							</div>
+						</section>
+					))
+				}
+				{
+					earlier.map((r) => (
+						<section class="blocks blocks--short">
+							<div class="date">
+								<span>{year(r.data.start)}</span>
+								<span>{r.data.end ? year(r.data.end) : 'Present'}</span>
+							</div>
+							<div class="decorator" />
+							<div class="details">
+								<header>
+									<h3>{r.data.title}</h3>
+									<span class="place">{place(r)}</span>
+									{r.data.location && (
+										<span class="location">
+											<Fragment set:html={icon('pin')} />
+											{r.data.location}
+										</span>
+									)}
+								</header>
+								<p class="scope">{r.data.outcome}</p>
+							</div>
+						</section>
+					))
+				}
+			</section>
 
-		<div class="cols">
 			{
 				profile.education.length > 0 && (
-					<section>
-						<h2>Education</h2>
+					<section class="main-block concise">
+						<h2><Fragment set:html={icon('school')} /> Education</h2>
 						{profile.education.map((e) => (
-							<p>
-								<strong>{e.degree}</strong>
-								<br />
-								{e.school}
-								{e.years && `, ${e.years}`}
-							</p>
+							<section class="blocks">
+								<div class="date">
+									{eduYears(e.years).map((y) => (
+											<span>{y}</span>
+										))}
+								</div>
+								<div class="decorator" />
+								<div class="details">
+									<header>
+										<h3>{e.degree}</h3>
+										<span class="place">{e.school}</span>
+									</header>
+								</div>
+							</section>
 						))}
-						{profile.languages.length > 0 && (
-							<p>
-								<strong>Languages:</strong> {profile.languages.map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).join(', ')}
-							</p>
-						)}
 					</section>
 				)
 			}
+
 			{
 				profile.patents.length > 0 && (
-					<section>
-						<h2>Patents</h2>
+					<section class="main-block concise">
+						<h2><Fragment set:html={icon('patent')} /> Patents</h2>
 						{profile.patents.map((p) => (
-							<p>
-								<strong>{p.title}</strong>
-								<br />
-								{[p.company, p.number, p.date && monthYear(p.date)].filter(Boolean).join(' · ')}
-							</p>
+							<section class="blocks">
+								<div class="date">{p.date && <span>{year(p.date)}</span>}</div>
+								<div class="decorator" />
+								<div class="details">
+									<header>
+										<h3>{p.title}</h3>
+										<span class="place">{[p.company, p.number].filter(Boolean).join(' · ')}</span>
+									</header>
+								</div>
+							</section>
 						))}
 					</section>
 				)
 			}
-		</div>
+		</main>
+
+		<aside id="sidebar">
+			<div class="side-block" id="contact">
+				<h2>Contact</h2>
+				<ul>
+					{
+						profile.location && (
+							<li>
+								<Fragment set:html={icon('pin')} /> {profile.location}
+							</li>
+						)
+					}
+					<li><Fragment set:html={icon('globe')} /> subash.org</li>
+					{
+						realLinkedin && (
+							<li>
+								<Fragment set:html={icon('linkedin')} /> {short(profile.links.linkedin).replace(/^linkedin\.com/, 'in')}
+							</li>
+						)
+					}
+					{
+						profile.links.github && (
+							<li>
+								<Fragment set:html={icon('code')} /> {short(profile.links.github)}
+							</li>
+						)
+					}
+				</ul>
+			</div>
+
+			{
+				profile.impact.length > 0 && (
+					<div class="side-block" id="impact">
+						<h2>Key achievements</h2>
+						{profile.impact.map((m) => (
+							<div class="metric">
+								<p class="metric__value">{m.value}</p>
+								<p class="metric__label">{m.label}</p>
+							</div>
+						))}
+						{profile.ai_transformation && <p class="ai">{profile.ai_transformation.text}</p>}
+					</div>
+				)
+			}
+
+			{
+				Object.keys(profile.competencies).length > 0 && (
+					<div class="side-block" id="skills">
+						<h2>Competencies</h2>
+						{Object.entries(profile.competencies).map(([group, items]) => (
+							<>
+								<h3>{group}</h3>
+								<ul>
+									{items.map((i) => (
+										<li>{i}</li>
+									))}
+								</ul>
+							</>
+						))}
+					</div>
+				)
+			}
+
+			{
+				profile.languages.length > 0 && (
+					<div class="side-block" id="languages">
+						<h2>Languages</h2>
+						<ul>
+							{profile.languages.map((l) => (
+								<li>
+									{l.name}
+									{l.level && <span class="muted"> · {l.level}</span>}
+								</li>
+							))}
+						</ul>
+					</div>
+				)
+			}
+		</aside>
 	</body>
 </html>
 
 <style is:global>
+	/* Letter with no page margins, so the shaded sidebar runs edge to edge on every page. The body's
+	   top/bottom padding repeats on each page (box-decoration-break: clone) to give pages 2+ their margins. */
+	:root {
+		--page-w: 8.5in;
+		--main-w: 5.95in;
+		--side-w: calc(var(--page-w) - var(--main-w));
+		--ink: #444;
+		--ink-strong: #222;
+		--muted: #777;
+		--rule: #c9c9c9;
+		--side-bg: #f2f2f2;
+		--date-w: 0.48in;
+		--dec-w: 0.26in;
+		--sans: var(--font-resume-sans, 'Open Sans'), 'Helvetica Neue', Arial, sans-serif;
+		--mono: var(--font-resume-mono, 'Source Code Pro'), ui-monospace, Menlo, monospace;
+	}
 	@page {
 		size: Letter;
-		margin: 14mm 15mm;
+		margin: 0;
 	}
 	* {
 		box-sizing: border-box;
@@ -161,118 +275,309 @@ const realLinkedin = !/linkedin\.com\/?$/.test(profile.links.linkedin);
 	html {
 		print-color-adjust: exact;
 		-webkit-print-color-adjust: exact;
+		background: linear-gradient(to right, #fff var(--main-w), var(--side-bg) var(--main-w));
 	}
 	body {
-		max-width: 186mm;
-		margin: 0 auto;
-		padding: 10mm 0;
-		background: #fff;
-		color: #1a1917;
-		font-family: var(--font-sans-stack);
-		font-size: 9.6pt;
-		line-height: 1.45;
+		width: var(--page-w);
+		margin: 0;
+		padding-block: 0.42in;
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+		display: grid;
+		grid-template-columns: var(--main-w) var(--side-w);
+		align-items: start;
+		font-family: var(--sans);
+		font-weight: 300;
+		font-size: 8.4pt;
+		line-height: 1.38;
+		color: var(--ink);
 	}
-	@media print {
-		body {
-			padding: 0;
-		}
-	}
-	p,
-	ul,
 	h1,
-	h2 {
+	h2,
+	h3,
+	p,
+	ul {
 		margin: 0;
 	}
-	header {
-		padding-bottom: 8pt;
-		border-bottom: 2.5pt solid #f2d872;
+	ul {
+		padding: 0;
+		list-style: none;
 	}
-	h1 {
-		font-family: var(--font-serif-stack);
-		font-weight: 500;
+	.ico {
+		width: 1.05em;
+		height: 1.05em;
+		vertical-align: -0.16em;
+		flex-shrink: 0;
+	}
+
+	/* ---------- Main column ---------- */
+	#main {
+		padding: 0.06in 0.34in 0 0.5in;
+	}
+	#title {
+		padding-bottom: 0.16in;
+	}
+	#title h1 {
+		font-weight: 300;
 		font-size: 25pt;
 		line-height: 1.1;
-		letter-spacing: -0.01em;
+		letter-spacing: 0.01em;
+		color: var(--ink-strong);
 	}
-	.title {
+	#title .subtitle {
 		margin-top: 3pt;
-		font-size: 11.5pt;
-		font-weight: 500;
-	}
-	.contact {
-		margin-top: 3pt;
-		color: #4f4d48;
-		white-space: pre-wrap;
-	}
-	section {
-		margin-top: 11pt;
-	}
-	h2 {
-		margin-bottom: 5pt;
-		padding-bottom: 2pt;
-		border-bottom: 0.6pt solid #cdc7ba;
-		font-size: 8pt;
-		font-weight: 600;
-		letter-spacing: 0.1em;
+		font-weight: 400;
+		font-size: 9.5pt;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: #4f4d48;
+		color: var(--muted);
 	}
-	section > p + p {
-		margin-top: 5pt;
+
+	.main-block {
+		margin-top: 0.1in;
 	}
-	strong {
+	.main-block > h2 {
+		display: flex;
+		align-items: center;
+		gap: 0.09in;
+		position: relative;
+		padding: 4pt 0 6pt;
 		font-weight: 600;
+		font-size: 10pt;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--ink-strong);
+		break-after: avoid;
 	}
-	ul {
-		padding-left: 12pt;
+	/* The icon sits in a ring on the timeline's axis. */
+	.main-block > h2 .ico {
+		box-sizing: content-box;
+		width: 9pt;
+		height: 9pt;
+		padding: 3.5pt;
+		border: 1px solid var(--rule);
+		border-radius: 50%;
+		background: #fff;
+		margin-left: calc(var(--date-w) + var(--dec-w) / 2 - 8.5pt);
+		margin-right: calc(var(--dec-w) / 2 - 8.5pt + 2pt);
 	}
-	li + li {
+	/* Summary: no heading, the full width of the main column, straight under the title. */
+	.intro {
+		padding-bottom: 0.04in;
+	}
+	.intro p + p {
+		margin-top: 4pt;
+	}
+
+	.blocks {
+		display: grid;
+		grid-template-columns: var(--date-w) var(--dec-w) 1fr;
+		break-inside: avoid;
+	}
+	.date {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		padding: 2pt 3pt 0 0;
+		font-size: 7.6pt;
+		font-weight: 400;
+		line-height: 1.25;
+		color: var(--muted);
+	}
+	.date span + span {
+		margin-top: 1pt;
+	}
+	/* Timeline: a hairline through every block, a two-ring dot at each entry. */
+	.decorator {
+		position: relative;
+	}
+	.decorator::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 50%;
+		border-left: 1px solid var(--rule);
+	}
+	.decorator::after {
+		content: '';
+		position: absolute;
+		top: 4pt;
+		left: 50%;
+		width: 7pt;
+		height: 7pt;
+		transform: translateX(-50%);
+		border-radius: 50%;
+		background: #fff;
+		box-shadow:
+			0 0 0 1px var(--rule),
+			inset 0 0 0 1.6pt #fff,
+			inset 0 0 0 7pt #9a9a9a;
+	}
+	.main-block > .blocks:last-child .decorator::before {
+		bottom: auto;
+		height: 6pt;
+	}
+	.details {
+		padding: 0 0 8pt 2pt;
+	}
+	.details header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 6pt;
+	}
+	.details h3 {
+		flex-basis: 100%;
+		font-weight: 600;
+		font-size: 9.2pt;
+		line-height: 1.3;
+		color: var(--ink-strong);
+	}
+	.details .place {
+		font-weight: 400;
+		color: var(--ink);
+	}
+	.details .location {
+		margin-left: auto;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 2pt;
+		font-size: 7.6pt;
+		color: var(--muted);
+	}
+	.details .location .ico {
+		width: 8pt;
+		height: 8pt;
+		vertical-align: -1pt;
+	}
+	.details .scope {
+		margin-top: 1pt;
+		font-style: italic;
+		color: var(--muted);
+	}
+	.details ul {
+		margin-top: 3pt;
+	}
+	.details li {
+		position: relative;
+		padding-left: 9pt;
+	}
+	.details li + li {
 		margin-top: 1.5pt;
 	}
-	.impact {
-		columns: 2;
-		column-gap: 18pt;
+	.details li::before {
+		content: '';
+		position: absolute;
+		left: 1pt;
+		top: 0.58em;
+		width: 3pt;
+		height: 3pt;
+		border-radius: 50%;
+		background: #9a9a9a;
 	}
-	.impact li {
-		break-inside: avoid;
+	.blocks--short .details {
+		padding-bottom: 5pt;
 	}
-	.ai {
-		margin-top: 5pt;
+	.blocks--short .details h3 {
+		font-size: 8.6pt;
 	}
-	.role {
-		break-inside: avoid;
+	.concise .details {
+		padding-bottom: 5pt;
+	}
+	.concise .details h3 {
+		font-size: 8.6pt;
+	}
+
+	/* ---------- Sidebar ---------- */
+	#sidebar {
+		padding: 0.12in 0.32in 0 0.28in;
+		font-size: 8pt;
+	}
+	.side-block + .side-block {
+		margin-top: 0.2in;
+	}
+	.side-block h2 {
+		padding-bottom: 4pt;
+		margin-bottom: 6pt;
+		border-bottom: 1px solid var(--rule);
+		font-weight: 600;
+		font-size: 9pt;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--ink-strong);
+	}
+	#contact li {
+		display: flex;
+		gap: 5pt;
+		align-items: baseline;
+		font-family: var(--mono);
+		font-weight: 400;
+		font-size: 7.4pt;
+		line-height: 1.9;
+		color: var(--ink-strong);
+		word-break: break-all;
+	}
+	#contact .ico {
+		width: 9pt;
+		height: 9pt;
+		vertical-align: -1.5pt;
+		color: var(--muted);
+	}
+	.metric + .metric {
+		margin-top: 6pt;
+	}
+	.metric__value {
+		font-weight: 300;
+		font-size: 15pt;
+		line-height: 1.1;
+		color: var(--ink-strong);
+	}
+	.metric__label {
+		margin-top: 1pt;
+		font-size: 7.4pt;
+		line-height: 1.35;
+	}
+	#impact .ai {
 		margin-top: 8pt;
+		padding-top: 6pt;
+		border-top: 1px dotted var(--rule);
+		font-size: 7.4pt;
+		font-style: italic;
 	}
-	.role:first-of-type {
+	#skills h3 {
+		margin-top: 6pt;
+		font-weight: 600;
+		font-size: 7.6pt;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	#skills h3:first-of-type {
 		margin-top: 0;
 	}
-	.role__head,
-	.earlier li {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: 12pt;
-	}
-	.dates {
-		color: #4f4d48;
-		white-space: nowrap;
-	}
-	.scope {
-		color: #4f4d48;
-		margin-bottom: 2pt;
-	}
-	.earlier {
-		list-style: none;
-		margin-top: 8pt;
-		padding: 5pt 0 0;
-		border-top: 0.6pt solid #e4e0d7;
-	}
-	.comp + .comp {
+	#skills ul,
+	#languages ul {
 		margin-top: 2pt;
 	}
-	.cols {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 18pt;
+	#skills li,
+	#languages li {
+		line-height: 1.55;
+	}
+	.muted {
+		color: var(--muted);
+	}
+
+	/* On screen (npm run dev → /profile/print/): show the page edge and a grey surround. */
+	@media screen {
+		html {
+			background: #ddd;
+		}
+		body {
+			margin: 24px auto;
+			min-height: 11in;
+			background: linear-gradient(to right, #fff var(--main-w), var(--side-bg) var(--main-w));
+			box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+		}
 	}
 </style>

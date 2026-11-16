@@ -39,7 +39,8 @@ export default defineConfig({
 	],
 	// Code blocks take their colours from the design tokens (src/styles/prose.css).
 	markdown: { shikiConfig: { theme: 'css-variables' } },
-	// Newsreader + Inter only (PLAN §5). Downloaded at build time and self-hosted from /_astro/.
+	// Newsreader + Inter for the site (PLAN §5); Open Sans + Source Code Pro for the resume PDF only
+	// (src/pages/profile/print/). Downloaded at build time and self-hosted from /_astro/.
 	fonts: [
 		{
 			provider: fontProviders.google(),
@@ -60,6 +61,26 @@ export default defineConfig({
 			subsets: ['latin'],
 			display: 'swap',
 			fallbacks: ['system-ui', 'sans-serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Open Sans',
+			cssVariable: '--font-resume-sans',
+			weights: [300, 400, 600],
+			styles: ['normal', 'italic'],
+			subsets: ['latin'],
+			display: 'block',
+			fallbacks: ['Helvetica Neue', 'Arial', 'sans-serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Source Code Pro',
+			cssVariable: '--font-resume-mono',
+			weights: [400],
+			styles: ['normal'],
+			subsets: ['latin'],
+			display: 'block',
+			fallbacks: ['ui-monospace', 'Menlo', 'monospace'],
 		},
 	],
 });

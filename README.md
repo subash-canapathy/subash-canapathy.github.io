@@ -24,9 +24,10 @@ stays exactly as it was.
 3. [Write an article](#3-write-an-article)
 4. [Add photos](#4-add-photos)
 5. [Update the profile](#5-update-the-profile)
-6. [Site-wide settings](#6-site-wide-settings)
-7. [When the build fails](#7-when-the-build-fails)
-8. [Where things live](#8-where-things-live)
+6. [The resume PDF](#6-the-resume-pdf)
+7. [Site-wide settings](#7-site-wide-settings)
+8. [When the build fails](#8-when-the-build-fails)
+9. [Where things live](#9-where-things-live)
 
 ---
 
@@ -80,7 +81,7 @@ git push
 
 Pushing to `master` starts the **Deploy** workflow. Watch it under the repository's **Actions** tab on
 GitHub. A green tick means the site is live; a red cross means the build stopped. Open the failed run to read
-the message (see [When the build fails](#7-when-the-build-fails)). Nothing changes on the live site until a
+the message (see [When the build fails](#8-when-the-build-fails)). Nothing changes on the live site until a
 build succeeds.
 
 To try something without publishing it, push a branch and open a pull request instead. The **Check**
@@ -354,6 +355,45 @@ src/content/profile/
   _templates/role.md    ← copy this to add a role
 ```
 
+The resume PDF has its own section: [6. The resume PDF](#6-the-resume-pdf).
+
+### Which file feeds which part of the page
+
+Read the Profile page top to bottom; each row says where that part is stored and what to edit. "Role" means a
+role's `index.md` in `src/content/profile/roles/` (see 5.2).
+
+| Part of the page | Stored in | What to change |
+|---|---|---|
+| **Masthead:** name and title line | `profile.yaml` | `name`, `title`, `employer`. `title` must match your current role's `title`. |
+| Masthead: paragraphs | `profile.yaml` | `summary` (one list item per paragraph) |
+| Masthead: location, LinkedIn, GitHub | `profile.yaml` | `location`, `links` |
+| Masthead: portrait | `src/assets/portrait.png` | replace the image file (same name) |
+| Masthead: Resume PDF button | made by the build | see [section 6](#6-the-resume-pdf) |
+| **Impact:** the four numbers | `profile.yaml` | `impact` (each item: `value` + `label`) |
+| Impact: "Organizational AI transformation" panel | `profile.yaml` | `ai_transformation.text` for the line; `ai_transformation.practices` for the three cards (each names an article folder in `article:`) |
+| **How I work:** Working style chart | `profile.yaml` | `working_style` (`hat`, `percent` in steps of 5, adding to 100; optional `line:`) |
+| How I work: Executive competencies | `profile.yaml` | `competencies` (group name → list of pills) |
+| **Featured work:** the three cards | roles | a `featured` block on up to three roles (`order` 1–3, `title`, optional `line`, `artifact` = which artifact is the picture) |
+| **Experience:** company headings and logos | `companies.yaml` + `src/assets/logos/` | see 5.3 |
+| Experience: each role card (collapsed) | role | `title`, `start`, `end`, `scope`, `location`, `outcome` |
+| Experience: each role card (expanded) | role | the Markdown text below the `---` ("What I built"), `scale`, `artifacts` (5.4) |
+| Experience: which card starts open | role | `open: true` |
+| Experience: "Before …" (earlier roles) | `profile.yaml` + roles | `earlier_roles_before` sets the cut-off year; roles that started before it are folded in here |
+| **Sidebar:** Education, Patents, Languages | `profile.yaml` | `education`, `patents`, `languages` |
+
+The same files also feed the **Home page**:
+
+| Part of Home | Stored in | What to change |
+|---|---|---|
+| Title line ("Partner Director of Engineering, Microsoft") and name | `profile.yaml` | `title`, `employer`, `name` |
+| Tagline and its yellow highlight | `profile.yaml` | `tagline`, `tagline_highlight` (must be a phrase inside `tagline`) |
+| Intro paragraph | `profile.yaml` | `home_intro` |
+| Career Highlights (four items) | roles | a `highlight` block on up to four roles (`order` 1–4, `label`, `line`) |
+
+After any change, save and look at <http://localhost:4321/profile/> (and `/` for Home) in `npm run dev`. If a
+rule is broken (a duplicate `order`, percentages not adding to 100, a missing logo, a title mismatch), the
+preview and the build stop with a message saying what's wrong.
+
 ### 5.1 `profile.yaml`
 
 Open it and edit the text. Each field is commented. The main ones:
@@ -362,7 +402,7 @@ Open it and edit the text. Each field is commented. The main ones:
 |---|---|
 | `name`, `title`, `employer` | Home title line, Profile masthead, resume header. **Keep `title` exactly as held**; the build checks that the current role's title matches it. |
 | `location` | Profile masthead and resume header |
-| `links.linkedin`, `links.github`, `links.instagram` | Buttons and footer links. **LinkedIn and Instagram are placeholders until you fill them in;** the Instagram button stays hidden until then. |
+| `links.linkedin`, `links.github`, `links.instagram` | Buttons and footer links. LinkedIn points to your profile (`https://www.linkedin.com/in/subashcanapathy/`). **Instagram is a placeholder until you fill it in;** the Instagram button stays hidden until then. |
 | `tagline`, `tagline_highlight` | Home page. `tagline_highlight` must be a phrase that appears in `tagline`; it gets the yellow highlighter. |
 | `home_intro` | The paragraph under the tagline on Home |
 | `summary` | The Profile masthead paragraphs, and the Summary in the resume. One list item per paragraph. |
@@ -468,25 +508,99 @@ artifacts:
 - `article` is the folder name of one of your articles; it links to it on this site.
 - Videos are links (they open on YouTube); nothing is embedded, so the page stays fast.
 
-### 5.5 The resume PDF
+---
 
-`/SubashCanapathy-Resume.pdf` (the "Resume PDF" button on the Profile) is made by the build from the same
-files. It uses:
+## 6. The resume PDF
 
-- `profile.yaml`: name, title, location, links, `summary`, `impact`, `ai_transformation.text`,
-  `competencies`, `education`, `languages`, `patents`;
-- each role's `title`, employer, dates, `scope`, `outcome` and `resume.bullets` (roles from before
-  `earlier_roles_before` get one line each);
-- roles with `resume: { include: false }` are left out of the PDF but stay on the Profile.
+The **Resume PDF** button on the Profile page downloads `/SubashCanapathy-Resume.pdf`. You never make or
+upload this file yourself: the build writes it from the same profile files as the Profile page (section 5),
+so the site and the resume can't drift apart.
 
-To see the resume while editing, open <http://localhost:4321/profile/print/> in `npm run dev` (use the
-browser's Print preview for page breaks). `npm run build` writes the real PDF to
-`dist/SubashCanapathy-Resume.pdf` if Google Chrome is installed; otherwise it skips the PDF with a note. On
-GitHub it is always made.
+### 6.1 How it is made
+
+1. `src/pages/profile/print/index.astro` lays the resume out as a print page, using your profile data.
+2. `npm run build` builds the site, then runs `scripts/make-resume-pdf.mjs`, which opens that page in headless
+   Chrome, prints it to `dist/SubashCanapathy-Resume.pdf`, and removes the print page from the published site.
+3. On GitHub this happens on every push, so the live PDF is always current. On your computer it happens only if
+   Google Chrome (or Chromium/Edge) is installed; otherwise the build skips the PDF with a note and carries on.
+
+### 6.2 Preview it while you edit
+
+Run `npm run dev` and open <http://localhost:4321/profile/print/>. It updates as you save. Use the browser's
+**Print → preview** to check page breaks. To see the exact PDF, run `npm run build` and open
+`dist/SubashCanapathy-Resume.pdf`.
+
+### 6.3 What goes into each part of the resume
+
+The layout is adapted from [mnjul/html-resume](https://github.com/mnjul/html-resume) (Apache-2.0): a white
+main column with a timeline (years · dot · role) beside a shaded sidebar, set in Open Sans Light with Source
+Code Pro for the contact details. It runs to two pages; the sidebar shading continues on every page.
+
+| Resume part | Where on the page | Comes from |
+|---|---|---|
+| Name and title line | top of the main column | `profile.yaml`: `name`, `title`, `employer` |
+| Summary | under the title line, full width of the main column, no heading | `profile.yaml` → `summary` (one paragraph per list item) |
+| Experience | main column, timeline | each role: years from `start`/`end`, `title`, company (from `companies.yaml`, shown as "Employer · Product" for product tiles such as AWS), `location`, `scope` in italics, then `outcome` as the first bullet and up to 4 `resume.bullets` |
+| Experience, earlier roles | end of the timeline | roles that started before `earlier_roles_before`: title, company, location and `outcome`, no bullets |
+| Education | main column, timeline | `profile.yaml` → `education` (`degree`, `school`, `years`) |
+| Patents | main column, timeline | `profile.yaml` → `patents` (`title`, `company`, `number`, year of `date`) |
+| Contact | sidebar | `location`, subash.org, `links.linkedin`, `links.github`. To add an email or phone number, add it to the Contact list in the layout file (6.4). |
+| Key achievements | sidebar | `profile.yaml` → `impact` (`value` large, `label` under it), then `ai_transformation.text` |
+| Competencies | sidebar | `profile.yaml` → `competencies` (each group as a small heading with its list) |
+| Languages | sidebar | `profile.yaml` → `languages` |
+
+To leave a role out of the PDF but keep it on the Profile page, set `resume: { include: false }` in that
+role's `index.md`. The Markdown write-up ("What I built"), `scale`, `artifacts`, `featured`, `highlight` and
+`working_style` are Profile-page only and never appear in the PDF.
+
+### 6.4 Change the layout (or match a template)
+
+The layout and the content are separate: **content** lives in `src/content/profile/` (section 5), **layout**
+lives in one file, `src/pages/profile/print/index.astro`. Changing the layout never means retyping content.
+
+In that file:
+
+- **Order of sections:** the HTML between `<body>` and `</body>`. Move a whole `<section>…</section>` block to
+  reorder; delete one to drop it.
+- **Main column or sidebar:** sections inside `<main id="main">` go in the main column, sections inside
+  `<aside id="sidebar">` go in the sidebar. Move a block between them to change sides.
+- **Fonts, sizes, spacing, colours, rules:** the `<style is:global>` block at the bottom. The column widths,
+  greys and timeline sizes are variables at its top (`--main-w`, `--side-bg`, `--date-w` …). The two resume
+  fonts are set in `astro.config.mjs` (`--font-resume-sans`, `--font-resume-mono`) and load on this page only.
+- **Paper size:** `@page { size: Letter; margin: 0; }` in that style block; use `size: A4` for A4 (and set
+  `--page-w: 210mm`). The page margin stays 0 so the sidebar shading reaches the paper's edges; the top and
+  bottom margins come from the body's `padding-block`, which repeats on every page.
+- **Page breaks:** add `break-before: page;` to a section's style to force it onto a new page, or
+  `break-inside: avoid;` to keep a block together (roles already use this).
+
+To make it match a resume template you like: give Claude the template (PDF, Word file or a screenshot) and ask
+it to restyle `src/pages/profile/print/index.astro` to match. Your data stays where it is; only the layout file
+changes. If the template has a section the data doesn't have yet (say, "Board roles"), that needs a new field in
+`profile.yaml` and a rule for it in `src/content.config.ts` as well.
+
+### 6.5 Use your own PDF instead
+
+If you'd rather upload a resume you made elsewhere:
+
+1. Save it as `public/SubashCanapathy-Resume.pdf` (exactly that name).
+2. In `package.json`, change the `build` line to `"build": "astro build"` (remove
+   `&& node scripts/make-resume-pdf.mjs`). Without this step the build overwrites your file with the generated one.
+3. Commit both and push.
+
+From then on, updating the resume means replacing that file. To go back to the generated PDF, delete the file
+and restore the `build` line.
+
+### 6.6 If the PDF isn't made
+
+- **On your computer:** "Chrome not found" means Chrome isn't installed where the script looks. Install Google
+  Chrome, or point to another Chromium-based browser with
+  `CHROME_PATH="/path/to/browser" npm run build`. The rest of the site still builds.
+- **On GitHub:** a missing browser fails the build on purpose, so the live site never ships without a resume.
+  The failed run's log ends with the `[resume]` message.
 
 ---
 
-## 6. Site-wide settings
+## 7. Site-wide settings
 
 - **Personal links** (LinkedIn, GitHub, Instagram): `src/content/profile/profile.yaml` → `links`.
 - **Site address:** `astro.config.mjs` → `site`. Change it to `https://subash.org` when the domain moves over
@@ -503,7 +617,7 @@ GitHub it is always made.
 
 ---
 
-## 7. When the build fails
+## 8. When the build fails
 
 `npm run check` / `npm run build` (and the GitHub Actions log) print what is wrong and in which file. The
 usual ones:
@@ -528,7 +642,7 @@ usual ones:
 
 ---
 
-## 8. Where things live
+## 9. Where things live
 
 ```
 src/

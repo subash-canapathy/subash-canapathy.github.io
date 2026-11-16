@@ -5,7 +5,7 @@ export const SITE_DESCRIPTION =
 	'Articles, profile and photography of Subash Canapathy, Partner Director of Engineering at Microsoft.';
 
 export const FALLBACK_LINKS = {
-	linkedin: 'https://www.linkedin.com/',
+	linkedin: 'https://www.linkedin.com/in/subashcanapathy/',
 	github: 'https://github.com/subash-canapathy',
 } as const;
 

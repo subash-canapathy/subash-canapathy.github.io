@@ -1,0 +1,103 @@
+---
+/** Shared footer: identical on every page (PLAN §14.1 item 5, DESIGN.md › Components). */
+import { getProfile } from '../lib/profile';
+import { url } from '../lib/url';
+import { getPhotos } from '../lib/photos';
+
+const profile = await getProfile();
+const year = new Date().getFullYear();
+const hasPhotos = getPhotos().length > 0;
+---
+
+<footer class="site-footer" id="contact">
+	<div class="container footer__top">
+		<div class="footer__pitch">
+			<p class="footer__line">Always glad to compare notes on engineering, AI and building teams.</p>
+			<a class="footer__cta" href={url('/connect/')}>Book a meeting <span aria-hidden="true">→</span></a>
+		</div>
+		<ul class="footer__links">
+			{hasPhotos && <li><a href={url('/photography/')}>Photography</a></li>}
+			<li><a href={url('/rss.xml')}>RSS</a></li>
+			<li><a href={profile.links.linkedin}>LinkedIn</a></li>
+			<li><a href={profile.links.github}>GitHub</a></li>
+		</ul>
+	</div>
+	<p class="container footer__copy">© {year} {profile.name}</p>
+</footer>
+
+<style>
+	.site-footer {
+		background: var(--foot-bg);
+		color: var(--foot-ink);
+		border-top: 1px solid var(--foot-border);
+	}
+	.footer__top {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+		padding-block: 44px 28px;
+	}
+	.footer__pitch {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 20px;
+		flex: 1 1 520px;
+	}
+	.footer__line {
+		font-family: var(--font-serif-stack);
+		font-size: 20px;
+		line-height: 1.4;
+		color: var(--foot-ink);
+	}
+	/* Yellow outline + yellow text; fills yellow on hover (PM picked option C, 2026-11-15). */
+	.footer__cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: var(--control-h);
+		padding-inline: 18px;
+		border: 1px solid var(--yellow);
+		border-radius: var(--radius);
+		background: transparent;
+		color: var(--yellow);
+		font-size: 15px;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			background-color var(--t-fast),
+			color var(--t-fast);
+	}
+	.footer__cta:hover {
+		background: var(--yellow);
+		color: var(--on-yellow);
+	}
+	.footer__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 24px;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 15px;
+	}
+	.footer__links a {
+		color: var(--foot-ink-2);
+		display: inline-block;
+		padding-block: 10px;
+	}
+	.footer__links a:hover {
+		color: var(--foot-ink);
+	}
+	.footer__copy {
+		padding-bottom: 32px;
+		font-size: 13px;
+		color: var(--foot-muted);
+	}
+	/* Focus ring on the dark band uses the light footer ink. */
+	.site-footer :focus-visible {
+		outline-color: var(--foot-ink);
+	}
+</style>

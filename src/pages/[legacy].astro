@@ -1,0 +1,45 @@
+---
+/**
+ * Redirect pages for the old Medium URLs (PLAN §9). One tiny page per old path, generated from
+ * each article's `medium_url`, plus Medium's profile paths. Instant meta refresh + canonical,
+ * which search engines treat as a permanent redirect. Never edited by hand.
+ */
+import { articleUrl, getAllArticles } from '../lib/articles';
+import { url } from '../lib/url';
+
+export async function getStaticPaths() {
+	const fixed: Record<string, string> = {
+		about: url('/profile/'),
+		archive: url('/articles/'),
+		latest: url('/articles/'),
+		feed: url('/rss.xml'),
+		'@subashcanapathy': url('/'),
+	};
+	const paths = Object.entries(fixed).map(([legacy, to]) => ({ params: { legacy }, props: { to } }));
+	for (const article of await getAllArticles()) {
+		if (!article.data.medium_url) continue;
+		const legacy = new URL(article.data.medium_url).pathname.replace(/^\/+|\/+$/g, '');
+		if (!legacy || legacy.includes('/')) {
+			throw new Error(`${article.id}: medium_url must be the article's old address on subash.org, like https://subash.org/some-title-abc123 (got "${article.data.medium_url}").`);
+		}
+		paths.push({ params: { legacy }, props: { to: articleUrl(article) } });
+	}
+	return paths;
+}
+const { to } = Astro.props as { to: string };
+const target = new URL(to, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Redirecting…</title>
+		<meta http-equiv="refresh" content={`0; url=${target}`} />
+		<link rel="canonical" href={target} />
+		<meta name="robots" content="noindex" />
+	</head>
+	<body>
+		<p>This page has moved to <a href={target}>{target}</a>.</p>
+	</body>
+</html>

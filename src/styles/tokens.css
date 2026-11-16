@@ -1,0 +1,170 @@
+/*
+ * Design tokens: the canvas theme block (light / night objects shared by every artboard),
+ * Design system v0.2. Hex values match DESIGN.md. Edit here, nowhere else.
+ *
+ * Theme switching: each colour is light-dark(<light>, <dark>). The <html> element's
+ * color-scheme decides which half applies:
+ *   - no choice saved → follows the visitor's system setting (works without JavaScript)
+ *   - data-theme="light" | "dark" → the visitor's choice, set before paint by the inline
+ *     script in BaseHead and remembered by the theme toggle.
+ */
+:root {
+	color-scheme: light dark;
+}
+/* On <html> for the whole page; on any element to force a theme locally (the /styleguide/ panels). */
+[data-theme='light'] {
+	color-scheme: light;
+}
+[data-theme='dark'] {
+	color-scheme: dark;
+}
+
+:root {
+	/* Colour */
+	--bg: light-dark(#fbfaf7, #141412); /* paper */
+	--surface: light-dark(#f3f1eb, #1c1b19); /* panels, featured / pinned cards */
+	--card: light-dark(#ffffff, #1e1d1a); /* album cards, competency pills */
+	--ink: light-dark(#1a1917, #edebe6); /* text, primary button */
+	--ink-2: light-dark(#4f4d48, #bdbab2); /* body copy, hero title line */
+	--muted: light-dark(#6e6b64, #a19e96); /* meta, labels */
+	--line: light-dark(#e4e0d7, #2e2c28); /* row line: rows, cards */
+	--line-section: light-dark(#cdc7ba, #3e3b36); /* section dividers, nav hover bar */
+	--line-control: light-dark(#c9c4b8, #4a4741); /* button outlines, loading dots */
+	--yellow: #f2d872; /* the one accent, both modes */
+	--yellow-hover: #e8c95a; /* accent button hover: deeper yellow */
+	--on-yellow: #1a1917; /* text on yellow is always ink */
+	--caret: light-dark(#ddb843, #e6c65a); /* nav-mark caret only */
+	--link-hover-bar: light-dark(#ddb843, #e6c65a); /* "→" link underline on hover: caret gold */
+
+	/* Primary button (one per view) */
+	--btn-bg: light-dark(#1a1917, #edebe6);
+	--btn-fg: light-dark(#fbfaf7, #141412);
+	--btn-bg-hover: light-dark(#000000, #d9d6cf);
+
+	/* Shared footer band */
+	--foot-bg: light-dark(#1a1917, #0b0b0a);
+	--foot-ink: light-dark(#fbfaf7, #edebe6);
+	--foot-ink-2: light-dark(#d9d6cf, #c9c6be);
+	--foot-muted: light-dark(#a8a59d, #9a978f);
+	--foot-border: light-dark(transparent, #2e2c28);
+
+	/* Portrait frame: the drawing is never filtered or inverted (DESIGN.md › Portrait) */
+	--portrait-bg: light-dark(#fbfaf7, #d9d5cb);
+	--portrait-ring: light-dark(#cdc7ba, #d9d5cb);
+	/* --portrait-shadow is theme-keyed below (box-shadow can't use light-dark()) */
+
+	/* Company logo tiles: white in both modes */
+	--logo-tile: #ffffff;
+
+	/* Working-style hats (Profile only; these colours mean the hats and nothing else) */
+	--hat-coach: #f2d872;
+	--hat-strategist: #d9906a;
+	--hat-builder: #a9b27e;
+	--hat-operator: #8fa2b6;
+
+	/* Code blocks */
+	--code-bg: light-dark(#f3f1eb, #0e0e0d);
+	--code-frame: light-dark(#e4e0d7, #2e2c28);
+	--code-ink: light-dark(#1a1917, #e3e0d8);
+	--code-comment: light-dark(#6e6b64, #8f8c84);
+	--code-mark: light-dark(#7a5c0e, #e6c65a);
+
+	/* Photo viewer (DESIGN.md › Photo viewer). The paper frame is the same in both themes. */
+	--viewer-bg: light-dark(#e4e0d7, #0b0b0a);
+	--viewer-muted: light-dark(#4f4d48, #a19e96);
+	--viewer-ctl: light-dark(#1a1917, #edebe6);
+	--viewer-ctl-bg: light-dark(rgba(251, 250, 247, 0.85), rgba(30, 29, 26, 0.85));
+	--viewer-ctl-line: light-dark(#c9c4b8, #4a4741);
+	--frame-paper: #fbfaf7;
+	--frame-ink: #1a1917;
+
+	/* Nav bar shadow: theme-keyed below (box-shadow can't use light-dark()) */
+
+	/* Type */
+	--font-serif-stack: var(--font-serif, 'Newsreader'), Georgia, serif;
+	--font-sans-stack: var(--font-sans, 'Inter'), system-ui, sans-serif;
+	--font-mono-stack: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; /* code blocks only */
+	--fs-display: 60px;
+	--fs-page-title: 52px;
+	--fs-section: 32px;
+	--fs-card-title: 30px;
+	--fs-list-title: 21px;
+	--fs-tagline: 24px;
+	--fs-body: 17px;
+	--fs-summary: 15px;
+	--fs-eyebrow: 12px;
+	--fs-meta: 14px;
+	--fs-title-line: 13px;
+
+	/* Layout */
+	--w-content: 1120px; /* nav, footer, headings, all page content (incl. side padding) */
+	--w-photos: 1200px; /* Photography grids only */
+	--w-reading: 680px; /* article column */
+	--w-figure-wide: 896px; /* {wide} figures, article hero */
+	--pad-x: 40px;
+	--space: 8px;
+	--gap-col: 40px;
+	--nav-height: 88px;
+
+	/* Shape */
+	--radius: 6px;
+	--radius-pill: 999px;
+	--bar: 3px; /* rounded underline bars */
+	--control-h: 44px;
+
+	/* Motion */
+	--t-fast: 120ms;
+
+	/* Focus ring: 2px ink, 3px offset (light ink in dark mode, since --ink flips) */
+	--focus-ring: 2px solid var(--ink);
+	--focus-offset: 3px;
+}
+
+@media (max-width: 720px) {
+	:root {
+		--pad-x: 20px;
+		--fs-tagline: 18px;
+		--fs-display: 40px;
+		--fs-page-title: 40px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--t-fast: 0ms;
+	}
+}
+
+/* Values light-dark() can't express (it only takes colours), keyed off the theme instead.
+   Hero highlighter. Light: flat marker band in the lower 40%. Dark: a drawn marker-pen stroke
+   (ragged chisel ends, darker double pass on the edges) with ink text: the one dark-mode
+   exception (DESIGN.md › Tokens). Portrait (dark): a 4px page-colour gap, then a 1px light ring. */
+:root {
+	--hl-marker: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20' preserveAspectRatio='none'%3E%3Cpath fill='%23F2D872' fill-opacity='0.86' d='M2.2 4.4L3.6 2.9C30 2 70 2.4 97.6 3.2L96.8 6.1L98.9 9.2L97.7 13.1L99.3 16.8C70 18.4 30 18.6 2.6 17.8L0.7 14.2L2.1 10.3L0.5 6.8Z'/%3E%3Cpath fill='%23F2D872' fill-opacity='0.5' d='M3.4 3.1C35 2.2 70 2.5 97.4 3.3L97.1 5.6C70 5 40 4.8 3 5.8Z'/%3E%3Cpath fill='%23F2D872' fill-opacity='0.45' d='M2.4 15.4C35 16.4 70 16.2 98.8 15.2L99.2 16.8C70 18.3 30 18.5 2.6 17.8Z'/%3E%3C/svg%3E")
+		center / 100% 100% no-repeat;
+}
+:root,
+[data-theme='light'] {
+	--hl-bg: linear-gradient(transparent 60%, rgb(242 216 114 / 0.7) 60%);
+	--hl-ink: inherit;
+	--hl-pad: 0 2px;
+	--portrait-shadow: none;
+	--nav-shadow: 0 1px 0 rgba(26, 25, 23, 0.06), 0 8px 18px -12px rgba(26, 25, 23, 0.28);
+}
+[data-theme='dark'] {
+	--hl-bg: var(--hl-marker);
+	--hl-ink: #1a1917;
+	--hl-pad: 0.04em 0.34em 0.06em;
+	--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
+	/* Dark: a faint light hairline plus a deeper black falloff, so the edge reads on near-black paper. */
+	--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--hl-bg: var(--hl-marker);
+		--hl-ink: #1a1917;
+		--hl-pad: 0.04em 0.34em 0.06em;
+		--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
+		--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
+	}
+}

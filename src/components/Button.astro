@@ -1,0 +1,108 @@
+---
+/**
+ * Buttons: 44px, 6px radius, Inter 15 (DESIGN.md › Components).
+ *  primary   ink fill, one per view; hover darker fill
+ *  secondary outline; hover surface fill + darker outline
+ *  accent    yellow; hover deeper yellow (no longer used on the live site; footer uses a quiet outline link)
+ * Pass `icon` ('linkedin' | 'instagram' | 'download') for the secondary + icon style.
+ * Renders <a> when `href` is set, otherwise <button>.
+ */
+type Icon = 'linkedin' | 'instagram' | 'download';
+interface Props {
+	variant?: 'primary' | 'secondary' | 'accent';
+	href?: string;
+	icon?: Icon;
+	fullWidth?: boolean;
+	type?: 'button' | 'submit';
+	class?: string;
+	'aria-label'?: string;
+}
+
+const { variant = 'primary', href, icon, fullWidth = false, type = 'button', class: className } = Astro.props;
+const ariaLabel = Astro.props['aria-label'];
+const classes = ['btn', `btn--${variant}`, { 'btn--icon': !!icon, 'btn--full': fullWidth }, className];
+const inner = await Astro.slots.render('default');
+
+function iconSvg(name?: Icon): string {
+	switch (name) {
+		case 'linkedin': // official LinkedIn glyph
+			return '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>';
+		case 'instagram':
+			return '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg>';
+		case 'download':
+			return '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>';
+		default:
+			return '';
+	}
+}
+---
+
+{
+	href ? (
+		<a class:list={classes} href={href} aria-label={ariaLabel}>
+			<Fragment set:html={iconSvg(icon)} />
+			<span set:html={inner} />
+		</a>
+	) : (
+		<button class:list={classes} type={type} aria-label={ariaLabel}>
+			<Fragment set:html={iconSvg(icon)} />
+			<span set:html={inner} />
+		</button>
+	)
+}
+
+<style>
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: var(--control-h);
+		padding: 0 20px;
+		border-radius: var(--radius);
+		border: 1px solid transparent;
+		font-family: inherit;
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 1;
+		cursor: pointer;
+		white-space: nowrap;
+		transition:
+			background-color var(--t-fast),
+			border-color var(--t-fast),
+			color var(--t-fast);
+	}
+	.btn--icon {
+		padding: 0 18px 0 14px;
+	}
+	.btn--full {
+		flex: 1 1 0;
+	}
+
+	.btn--primary {
+		background: var(--btn-bg);
+		color: var(--btn-fg);
+	}
+	.btn--primary:hover {
+		background: var(--btn-bg-hover);
+	}
+
+	.btn--secondary {
+		background: transparent;
+		border-color: var(--line-control);
+		color: var(--ink);
+		font-weight: 400;
+	}
+	.btn--secondary:hover {
+		background: var(--surface);
+		border-color: var(--muted);
+	}
+
+	.btn--accent {
+		background: var(--yellow);
+		color: var(--on-yellow);
+	}
+	.btn--accent:hover {
+		background: var(--yellow-hover);
+	}
+</style>

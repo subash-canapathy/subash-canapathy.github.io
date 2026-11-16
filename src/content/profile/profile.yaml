@@ -1,0 +1,90 @@
+# Page-level profile content. Feeds the Home hero, the Profile page and the resume PDF.
+# Edit, save, push: the build checks every field. See README › "Update the profile".
+
+name: Subash Canapathy
+title: Partner Director of Engineering # exactly as held
+employer: Microsoft
+location: Metro Vancouver, Canada
+
+links:
+  github: "https://github.com/subash-canapathy"
+  linkedin: "https://www.linkedin.com/in/subashcanapathy/"
+  # instagram: "https://www.instagram.com/…"
+
+# Home page hero
+tagline: "Engineering Leader, AI Change Agent, & a forever humanist."
+tagline_highlight: "a forever humanist." # the phrase that gets the highlighter
+home_intro: >-
+  Engineering leader with 20+ years building enterprise-scale distributed systems, the last three on
+  building inferred intelligence and analytics for M365 Copilot. I lead organizational AI
+  transformations and build psychologically safe, customer-obsessed teams.
+
+# Profile masthead (also the Summary in the resume PDF). One list item per paragraph.
+summary:
+  - >-
+    Engineering leader with 20+ years building enterprise-scale distributed systems, the last three on
+    applied AI: people and organizational intelligence platforms, built on knowledge graphs, that power
+    personalization and analytics in M365 Copilot. I lead large-scale organizational AI transformations,
+    raising group-wide AI fluency and bringing an AI-driven, human-led SDLC to complex legacy systems.
+  - >-
+    As a change agent and servant leader, I foster psychologically safe, customer-obsessed teams where
+    trust, curiosity, and ownership of outcomes lead to impactful, high-performing products.
+
+# Impact strip: four numbers, in display order.
+impact:
+  - { value: "140", label: "people across three product teams in North America, Brazil and India" }
+  - { value: "2 × $50M+", label: "ARR products taken from zero to one: AWS MWAA and Microsoft People Skills" }
+  - { value: "350%", label: "above MWAA's projected first-year revenue rate: $60M ARR within 5 months of GA" }
+  - { value: "<5%", label: "average attrition across roles over 10 years, with bar-raising thrive scores" }
+
+# AI transformation band. `article` is an article folder name; the card links to it once that
+# article exists (until then `title` is shown without a link).
+ai_transformation:
+  text: "Driving organizational AI transformation through project squads, agentic SDLC and growth plans for agentic systems."
+  practices:
+    - name: Project squads
+      article: hybrid-squads-model-for-enterprise-product-teams
+      title: Hybrid Squads Model for Enterprise Product Teams
+    - name: Agentic SDLC
+      article: shaped-specs-for-agentic-product-development
+      title: Shaped Specs for agentic product development
+    - name: Growth plans for agentic systems
+      article: towards-frontier-teams-human-agent-ratios
+      title: Towards Frontier Teams and Human-Agent Ratios
+
+# How I work: share of a typical week. Percents are multiples of 5 and must add up to 100.
+# `line` (optional) replaces `covers` in the row under the chart.
+working_style:
+  - { hat: Coach, covers: "People ops", percent: 35 }
+  - { hat: Strategist, covers: "Product strategy & customer relations", percent: 30 }
+  - { hat: Builder, covers: "Innovation & upskilling", percent: 20 }
+  - { hat: Operator, covers: "Engineering excellence & rhythm of business", percent: 15 }
+
+competencies:
+  AI: [AI transformation, Generative AI, Agentic systems, Inferencing models, Knowledge graphs, AI ROI, Agentic budgeting]
+  Leadership: [Product strategy, Emotional intelligence, Mentoring]
+  Engineering: [Operational excellence, Serverless computing]
+
+# Roles that started before this year are grouped under "Earlier roles".
+earlier_roles_before: 2016
+
+education:
+  - degree: "B.Tech, Computer Science"
+    school: "Motilal Nehru National Institute of Technology, Allahabad"
+    years: "2001 – 2005"
+
+patents:
+  - title: "Generating and using context briefs to identify relevant chat responses"
+    company: Microsoft
+    number: "US-20250138910-A1"
+    date: "2025-05"
+    url: "https://patents.google.com/patent/US20250138910A1"
+  - title: "Determining load completion of dynamically updated content"
+    company: Amazon
+    number: "US-10417306-B1"
+    date: "2013-03"
+    url: "https://patents.google.com/patent/US10417306B1"
+
+languages:
+  - { name: English, level: Advanced }
+  - { name: Tamil, level: Native }

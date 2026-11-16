@@ -1,0 +1,67 @@
+# Albums on the Photography page, in the order they appear.
+#
+# Every photo under src/content/photos/ shows in the camera roll automatically.
+# To put a photo in an album, add its path (relative to this folder) under that album's `photos:`.
+# A photo can be listed in several albums; it is still stored once.
+#
+#   cover:   optional; the album's newest photo is used when it is left out
+#   layout:  optional; "square" gives an even grid of square crops instead of the masonry
+#
+# Example:
+#   vancouver:
+#     title: Vancouver
+#     cover: ./2026/10/gastown-rain.jpg
+#     photos:
+#       - ./2026/10/gastown-rain.jpg
+#       - ./2025/12/seawall-fog.jpg
+
+vancouver:
+  title: Vancouver
+  cover: ./2026/10/dscf5898-2.jpg
+  photos:
+    - ./2023/06/dscf0906-1.jpg
+    - ./2026/10/dscf5898-2.jpg
+    - ./2026/10/dscf5921.jpg
+    - ./2026/10/dscf5932.jpg
+    - ./2026/10/dscf5956.jpg
+    - ./2026/10/dscf5982.jpg
+    - ./2026/10/dscf5993.jpg
+
+travel:
+  title: Travel
+  cover: ./2025/09/dscf2089-1.jpg
+  photos:
+    - ./2025/09/dscf2087-1.jpg
+    - ./2025/09/dscf2089-1.jpg
+    - ./2026/01/dscf4939.jpg
+    - ./2024/03/pxl-20240309-224032289-mp.jpg
+    - ./2024/01/dscf1351.jpg
+    - ./2026/09/dscf5620.jpg
+
+off-roading:
+  title: Off-Roading
+  cover: ./2024/02/dscf1565.jpg
+  photos:
+    - ./2023/11/dji-0263.jpg
+    - ./2023/12/dji-0286.jpg
+    - ./2024/04/dji-0297.jpg
+    - ./2024/04/dji-0300.jpg
+    - ./2024/08/dji-0403.jpg
+    - ./2023/11/dscf1218.jpg
+    - ./2023/11/dscf1238.jpg
+    - ./2024/01/dscf1503.jpg
+    - ./2024/02/dscf1565.jpg
+    - ./2024/04/dscf1718.jpg
+    - ./2024/04/dscf1747.jpg
+    - ./2024/04/dscf1801.jpg
+    - ./2024/06/dscf1912.jpg
+    - ./2026/09/dscf5535.jpg
+    - ./2024/08/img-4736.jpg
+    - ./2024/08/img-4738.jpg
+    - ./2023/11/pxl-20231125-235529144.jpg
+    - ./2023/11/pxl-20231126-003841949-mp.jpg
+
+monochrome:
+  title: Monochrome
+  photos:
+    - ./2024/04/dscf1747.jpg

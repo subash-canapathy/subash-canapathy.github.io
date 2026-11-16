@@ -1,0 +1,18 @@
+---
+/** Meta line: Inter 13–14, muted. Pass `items`; they are joined with " · ". */
+interface Props {
+	items: (string | undefined | null | false)[];
+	size?: 13 | 14;
+}
+const { items, size = 14 } = Astro.props;
+const text = items.filter(Boolean).join(' · ');
+---
+
+<p class="meta" style={`font-size: ${size}px`}>{text}</p>
+
+<style>
+	.meta {
+		margin: 0;
+		color: var(--muted);
+	}
+</style>

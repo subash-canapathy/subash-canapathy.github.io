@@ -1,0 +1,15 @@
+---
+/** /articles/page/<n>/ for n ≥ 2 (page 1 is /articles/). */
+import ArticlesPage from '../../../components/ArticlesPage.astro';
+import { PAGE_SIZE, getArticles } from '../../../lib/articles';
+
+export async function getStaticPaths() {
+	const all = await getArticles();
+	const rest = all.filter((a) => !a.data.pinned);
+	const pages = Math.ceil(rest.length / PAGE_SIZE);
+	return Array.from({ length: Math.max(0, pages - 1) }, (_, i) => ({ params: { page: String(i + 2) } }));
+}
+const page = Number(Astro.params.page);
+---
+
+<ArticlesPage page={page} />

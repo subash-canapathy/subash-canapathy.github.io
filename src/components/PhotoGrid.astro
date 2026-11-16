@@ -1,0 +1,496 @@
+---
+/**
+ * A grid of photos plus the full-screen viewer (DESIGN.md › Photography, Photo viewer).
+ * - masonry: uncropped, newest first, 4 columns on desktop and 2 on phones; more photos load as
+ *   the page scrolls (grey dots while loading).
+ * - square: an even grid of square crops.
+ * Without JavaScript the photos still show (CSS columns) and each links to its full-size image.
+ */
+import { Image, getImage } from 'astro:assets';
+import fujifilm from '../assets/brands/fujifilm.svg';
+import type { Photo } from '../lib/photos';
+
+interface Props {
+	photos: Photo[];
+	layout?: 'masonry' | 'square';
+}
+const { photos, layout = 'masonry' } = Astro.props;
+const items = await Promise.all(
+	photos.map(async (photo) => {
+		const full = await getImage({ src: photo.src, width: Math.min(photo.src.width, 2000), format: 'webp', quality: 82 });
+		return { photo, full: full.src };
+	}),
+);
+---
+
+<ul class:list={['grid', `grid--${layout}`]} data-photo-grid={layout}>
+	{
+		items.map(({ photo, full }) => (
+			<li style={`--ratio: ${photo.src.width} / ${photo.src.height}`} data-ratio={photo.src.height / photo.src.width}>
+				<a
+					href={full}
+					data-photo
+					data-w={photo.src.width}
+					data-h={photo.src.height}
+					data-alt={photo.alt}
+					data-brand={photo.frame?.brand}
+					data-model={photo.frame?.model}
+					data-exposure={photo.frame?.exposure}
+					data-lens={photo.frame?.lens}
+				>
+					<Image src={photo.src} alt={photo.alt} widths={[360, 720]} sizes="(max-width: 720px) 50vw, 290px" loading="lazy" />
+				</a>
+			</li>
+		))
+	}
+</ul>
+<p class="loading" data-photo-more hidden aria-label="Loading more photos">
+	<span></span><span></span><span></span>
+</p>
+
+<dialog class="viewer" data-viewer aria-label="Photo viewer">
+	<p class="viewer__count" data-count aria-live="polite"></p>
+	<button type="button" class="viewer__btn viewer__close" data-close aria-label="Close viewer">
+		<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+	</button>
+	<button type="button" class="viewer__btn viewer__prev" data-prev aria-label="Previous photo">
+		<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+	</button>
+	<button type="button" class="viewer__btn viewer__next" data-next aria-label="Next photo">
+		<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+	</button>
+	<figure class="frame" data-frame>
+		<img data-img alt="" />
+		<figcaption class="strip" data-strip>
+			<span class="strip__left">
+				<img class="strip__logo" data-logo src={fujifilm.src} alt="Fujifilm" hidden />
+				<span class="strip__make" data-make hidden></span>
+				<span class="strip__rule strip__rule--short" data-brand-rule aria-hidden="true"></span>
+				<span class="strip__model" data-model></span>
+			</span>
+			<span class="strip__right" data-right>
+				<svg class="strip__glyph" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"></path></svg>
+				<span class="strip__rule" aria-hidden="true"></span>
+				<span class="strip__lines">
+					<span class="strip__exposure" data-exposure></span>
+					<span class="strip__lens" data-lens></span>
+				</span>
+			</span>
+		</figcaption>
+	</figure>
+</dialog>
+
+<script>
+	const BATCH = 24;
+
+	document.querySelectorAll<HTMLElement>('[data-photo-grid]').forEach((grid) => {
+		const items = [...grid.querySelectorAll<HTMLLIElement>(':scope > li')];
+		const links = items.map((li) => li.querySelector<HTMLAnchorElement>('a[data-photo]')!);
+		const more = grid.parentElement?.querySelector<HTMLElement>('[data-photo-more]');
+		const masonry = grid.dataset.photoGrid === 'masonry';
+		let shown = Math.min(BATCH, items.length);
+		let columns = 0;
+
+		// Masonry: deal the photos into columns, always onto the shortest one, so the order
+		// reads newest first across the top instead of down each column.
+		const layout = (force = false) => {
+			if (!masonry) return;
+			const count = Number(getComputedStyle(grid).getPropertyValue('--cols')) || 4;
+			if (!force && count === columns) return;
+			columns = count;
+			const cols = Array.from({ length: count }, () => {
+				const col = document.createElement('div');
+				col.className = 'col';
+				return { col, height: 0 };
+			});
+			items.slice(0, shown).forEach((li) => {
+				const target = cols.reduce((a, b) => (b.height < a.height ? b : a));
+				target.col.append(li);
+				target.height += Number(li.dataset.ratio) || 1;
+			});
+			grid.replaceChildren(...cols.map((c) => c.col));
+			grid.classList.add('is-laid-out');
+		};
+
+		if (masonry) {
+			items.slice(shown).forEach((li) => li.remove());
+			layout(true);
+			window.addEventListener('resize', () => layout());
+			if (more && shown < items.length) {
+				more.hidden = false;
+				new IntersectionObserver(
+					(entries, observer) => {
+						if (!entries.some((e) => e.isIntersecting)) return;
+						shown = Math.min(shown + BATCH, items.length);
+						layout(true);
+						if (shown >= items.length) {
+							more.hidden = true;
+							observer.disconnect();
+						}
+					},
+					{ rootMargin: '600px' },
+				).observe(more);
+			}
+		}
+
+		/* Viewer */
+		const viewer = grid.parentElement?.querySelector<HTMLDialogElement>('[data-viewer]');
+		if (!viewer) return;
+		const $ = <T extends HTMLElement>(sel: string) => viewer.querySelector<T>(sel)!;
+		const img = $<HTMLImageElement>('[data-img]');
+		const frame = $('[data-frame]');
+		const strip = $('[data-strip]');
+		let index = 0;
+
+		const text = (sel: string, value: string | undefined) => {
+			const el = $(sel);
+			el.textContent = value ?? '';
+			el.hidden = !value;
+		};
+		const show = (i: number) => {
+			index = (i + links.length) % links.length;
+			const a = links[index]!;
+			const d = a.dataset;
+			img.src = a.href;
+			img.width = Number(d.w);
+			img.height = Number(d.h);
+			img.alt = d.alt ?? '';
+			$('[data-count]').textContent = `${index + 1} / ${links.length}`;
+
+			const fuji = d.brand === 'fujifilm';
+			$('[data-logo]').hidden = !fuji;
+			text('[data-make]', fuji ? undefined : d.brand);
+			text('[data-model]', d.model);
+			$('[data-brand-rule]').hidden = !(d.brand && d.model);
+			text('[data-exposure]', d.exposure);
+			text('[data-lens]', d.lens);
+			$('[data-right]').hidden = !d.exposure && !d.lens;
+			const hasData = !!(d.brand || d.model || d.exposure);
+			strip.hidden = !hasData;
+			frame.classList.toggle('frame--plain', !hasData);
+			// Warm the neighbours so stepping through feels instant.
+			[index + 1, index - 1].forEach((n) => {
+				const next = links[(n + links.length) % links.length];
+				if (next) new Image().src = next.href;
+			});
+		};
+
+		links.forEach((a, i) =>
+			a.addEventListener('click', (e) => {
+				if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+				e.preventDefault();
+				show(i);
+				viewer.showModal();
+			}),
+		);
+		$('[data-close]').addEventListener('click', () => viewer.close());
+		$('[data-prev]').addEventListener('click', () => show(index - 1));
+		$('[data-next]').addEventListener('click', () => show(index + 1));
+		viewer.addEventListener('click', (e) => {
+			if (e.target === viewer) viewer.close();
+		});
+		viewer.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowLeft') show(index - 1);
+			if (e.key === 'ArrowRight') show(index + 1);
+		});
+		viewer.addEventListener('close', () => links[index]?.focus());
+
+		// Phones: swipe left / right.
+		let startX = 0;
+		let startY = 0;
+		viewer.addEventListener('touchstart', (e) => {
+			startX = e.touches[0]!.clientX;
+			startY = e.touches[0]!.clientY;
+		}, { passive: true });
+		viewer.addEventListener('touchend', (e) => {
+			const dx = e.changedTouches[0]!.clientX - startX;
+			const dy = e.changedTouches[0]!.clientY - startY;
+			if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) show(index + (dx < 0 ? 1 : -1));
+		}, { passive: true });
+	});
+</script>
+
+<style>
+	.grid {
+		--cols: 4;
+		--gap: 16px;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.grid li {
+		break-inside: avoid;
+	}
+	.grid a {
+		display: block;
+		aspect-ratio: var(--ratio);
+		background: var(--surface);
+		overflow: hidden;
+		border-radius: 2px;
+	}
+	.grid :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: opacity var(--t-fast);
+	}
+	.grid a:hover :global(img) {
+		opacity: 0.9;
+	}
+
+	/* Masonry. Before the script runs (or without it): CSS columns. After: flex columns. */
+	.grid--masonry {
+		columns: var(--cols);
+		column-gap: var(--gap);
+	}
+	.grid--masonry li {
+		margin-bottom: var(--gap);
+	}
+	.grid--masonry.is-laid-out {
+		columns: auto;
+		display: flex;
+		align-items: flex-start;
+		gap: var(--gap);
+	}
+	.grid--masonry :global(.col) {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	.grid--square {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: var(--gap);
+	}
+	.grid--square a {
+		aspect-ratio: 1;
+	}
+
+	@media (max-width: 1000px) {
+		.grid {
+			--cols: 3;
+		}
+	}
+	@media (max-width: 720px) {
+		.grid {
+			--cols: 2;
+			--gap: 8px;
+		}
+	}
+
+	/* Loading indicator: grey dots (never yellow). */
+	.loading {
+		display: flex;
+		justify-content: center;
+		gap: 8px;
+		padding: 28px 0 8px;
+	}
+	.loading[hidden] {
+		display: none;
+	}
+	.loading span {
+		width: 7px;
+		height: 7px;
+		border-radius: var(--radius-pill);
+		background: var(--line-control);
+	}
+
+	/* Viewer */
+	.viewer {
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+		height: 100dvh;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		padding: 0;
+		border: none;
+		background: var(--viewer-bg);
+		color: var(--viewer-ctl);
+		overflow: hidden;
+	}
+	.viewer[open] {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.viewer::backdrop {
+		background: var(--viewer-bg);
+	}
+	.viewer__count {
+		position: absolute;
+		left: 28px;
+		top: 26px;
+		margin: 0;
+		font-size: 14px;
+		color: var(--viewer-muted);
+	}
+	.viewer__btn {
+		position: absolute;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--viewer-ctl-line);
+		border-radius: var(--radius-pill);
+		background: var(--viewer-ctl-bg);
+		color: var(--viewer-ctl);
+		cursor: pointer;
+	}
+	.viewer__close {
+		right: 24px;
+		top: 16px;
+	}
+	.viewer__prev,
+	.viewer__next {
+		top: 50%;
+		margin-top: -22px;
+	}
+	.viewer__prev {
+		left: 28px;
+	}
+	.viewer__next {
+		right: 28px;
+	}
+	.viewer :focus-visible {
+		outline-color: var(--viewer-ctl);
+	}
+
+	/* The print frame: paper in both themes; the photo is never cropped. */
+	.frame {
+		--border: 14px;
+		--strip: 60px;
+		margin: 0;
+		padding: var(--border) var(--border) 0;
+		background: var(--frame-paper);
+		color: var(--frame-ink);
+		box-shadow:
+			0 1px 2px rgba(0, 0, 0, 0.12),
+			0 18px 44px -18px rgba(0, 0, 0, 0.45);
+	}
+	.frame--plain {
+		padding-bottom: var(--border);
+	}
+	.frame > img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: calc(100vw - 2 * 96px - 2 * var(--border));
+		max-height: calc(100dvh - 2 * 40px - var(--border) - var(--strip));
+	}
+	.strip {
+		height: var(--strip);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 0 6px;
+	}
+	.strip[hidden] {
+		display: none;
+	}
+	.strip__left,
+	.strip__right {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		font-size: 14px;
+	}
+	.strip [hidden] {
+		display: none;
+	}
+	.strip__logo {
+		height: 13px;
+		width: auto;
+	}
+	.strip__make {
+		font-weight: 600;
+	}
+	.strip__model {
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.strip__rule {
+		width: 1px;
+		height: 28px;
+		background: #cdc7ba;
+		flex-shrink: 0;
+	}
+	.strip__rule--short {
+		height: 18px;
+	}
+	.strip__glyph {
+		width: 22px;
+		height: 22px;
+		color: #4f4d48;
+		flex-shrink: 0;
+	}
+	.strip__lines {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.35;
+		white-space: nowrap;
+	}
+	.strip__exposure {
+		font-size: 13px;
+		font-weight: 500;
+	}
+	.strip__lens {
+		font-size: 12px;
+		color: #6e6b64;
+	}
+
+	@media (max-width: 720px) {
+		.viewer__prev,
+		.viewer__next {
+			display: none;
+		}
+		.viewer__count {
+			left: 20px;
+			top: 22px;
+		}
+		.viewer__close {
+			right: 12px;
+			top: 10px;
+		}
+		.frame {
+			--border: 8px;
+			--strip: 46px;
+		}
+		.frame > img {
+			max-width: calc(100vw - 2 * 12px - 2 * var(--border));
+			max-height: calc(100dvh - 2 * 64px - var(--border) - var(--strip));
+		}
+		.strip {
+			padding: 0 2px;
+			gap: 8px;
+		}
+		.strip__left,
+		.strip__right {
+			gap: 8px;
+			font-size: 12px;
+		}
+		.strip__logo {
+			height: 11px;
+		}
+		.strip__rule {
+			height: 22px;
+		}
+		.strip__rule--short {
+			height: 14px;
+		}
+		.strip__glyph {
+			width: 18px;
+			height: 18px;
+		}
+		.strip__exposure,
+		.strip__lens {
+			font-size: 11px;
+		}
+	}
+</style>

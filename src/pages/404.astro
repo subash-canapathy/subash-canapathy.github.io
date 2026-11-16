@@ -1,0 +1,37 @@
+---
+/** Custom 404 (canvas: NotFound). Old Medium wildcard paths such as /tagged/* land here. */
+import Button from '../components/Button.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="Page not found" noindex noCurrent>
+	<div class="container page">
+		<Eyebrow>404 · Page not found</Eyebrow>
+		<h1 class="page-title">This page isn't here.</h1>
+		<p class="lede">
+			The link may be old or mistyped. Articles that used to live on Medium have moved to this site, so the one you want is
+			probably in the list.
+		</p>
+		<div class="ctas">
+			<Button variant="primary" href={url('/articles/')}>All articles</Button>
+			<Button variant="secondary" href={url('/')}>Home</Button>
+		</div>
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-block: 72px 96px;
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+	.ctas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		padding-top: 6px;
+	}
+</style>

@@ -1,0 +1,193 @@
+---
+/**
+ * One artifact of a role: a 16:9 preview, then its type and title.
+ * video / talk = play tile (opens the link; nothing is embedded) · page / post = mini browser frame ·
+ * article = title tile linking to the article on this site.
+ */
+import { Image } from 'astro:assets';
+import type { Role } from '../lib/profile';
+import { type Article, articleUrl } from '../lib/articles';
+
+type Artifact = Role['data']['artifacts'][number];
+interface Props {
+	artifact: Artifact;
+	articles: Article[];
+	/** Preview only (used as the lead image of a Featured work card). */
+	previewOnly?: boolean;
+}
+const { artifact, articles, previewOnly = false } = Astro.props;
+const LABEL = { video: 'Video', talk: 'Talk', page: 'Product page', post: 'Launch post', article: 'Article' } as const;
+const article = artifact.type === 'article' ? articles.find((a) => a.id === artifact.article) : undefined;
+const href = artifact.type === 'article' ? (article ? articleUrl(article) : undefined) : artifact.url;
+const title = artifact.type === 'article' ? (article?.data.title ?? artifact.article) : artifact.title;
+const host = artifact.type !== 'article' ? new URL(artifact.url).host.replace(/^www\./, '') + new URL(artifact.url).pathname.replace(/\/$/, '') : '';
+const Tag = href && !previewOnly ? 'a' : 'div';
+---
+
+<Tag class="artifact" href={Tag === 'a' ? href : undefined} target={Tag === 'a' && artifact.type !== 'article' ? '_blank' : undefined} rel={Tag === 'a' && artifact.type !== 'article' ? 'noopener' : undefined}>
+	{
+		(artifact.type === 'video' || artifact.type === 'talk') && (
+			<span class="preview preview--play">
+				<span class="play">
+					<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24"><path d="M9 7.5v9l7.5-4.5z" fill="currentColor" /></svg>
+				</span>
+				{artifact.type === 'video' && artifact.duration && <span class="duration">{artifact.duration}</span>}
+			</span>
+		)
+	}
+	{
+		(artifact.type === 'page' || artifact.type === 'post') && (
+			<span class="preview preview--frame">
+				<span class="frame__bar">
+					<span class="dot" />
+					<span class="dot" />
+					<span class="frame__url">{host}</span>
+				</span>
+				{artifact.type === 'page' ? (
+					<Image class="frame__shot" src={artifact.screenshot} alt="" width={560} loading="lazy" />
+				) : (
+					<span class="frame__body">{artifact.title}</span>
+				)}
+			</span>
+		)
+	}
+	{
+		artifact.type === 'article' && (
+			<span class="preview preview--article">
+				<span class="eyebrow">Article</span>
+				<span class="article-title">{title}</span>
+			</span>
+		)
+	}
+	{
+		!previewOnly && (
+			<>
+				<span class="type">{LABEL[artifact.type]}</span>
+				<span class="title">{title}</span>
+			</>
+		)
+	}
+</Tag>
+
+<style>
+	.artifact {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+		color: var(--ink);
+	}
+	.preview {
+		aspect-ratio: 16 / 9;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		overflow: hidden;
+		display: flex;
+	}
+	.preview--play {
+		position: relative;
+		align-items: center;
+		justify-content: center;
+		background: var(--surface);
+	}
+	.play {
+		width: 52px;
+		height: 52px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-pill);
+		background: var(--card);
+		border: 1px solid var(--line-control);
+	}
+	.duration {
+		position: absolute;
+		right: 8px;
+		bottom: 8px;
+		padding: 1px 6px;
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		background: var(--card);
+		font-size: 11px;
+		color: var(--muted);
+	}
+	.preview--frame {
+		flex-direction: column;
+		background: var(--card);
+	}
+	.frame__bar {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		padding: 6px 8px;
+		background: var(--surface);
+		border-bottom: 1px solid var(--line);
+	}
+	.dot {
+		width: 6px;
+		height: 6px;
+		border-radius: var(--radius-pill);
+		background: var(--line-control);
+	}
+	.frame__url {
+		flex: 1;
+		min-width: 0;
+		margin-left: 6px;
+		padding: 1px 8px;
+		border-radius: 4px;
+		background: var(--bg);
+		font-size: 10px;
+		color: var(--muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.frame__shot {
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		object-fit: cover;
+		object-position: top;
+	}
+	.frame__body {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px;
+		font-size: 12px;
+		color: var(--muted);
+		text-align: center;
+	}
+	.preview--article {
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 4px;
+		padding: 12px;
+		background: var(--surface);
+	}
+	.eyebrow {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.article-title {
+		font-family: var(--font-serif-stack);
+		font-size: 15px;
+		line-height: 1.25;
+	}
+	.type {
+		font-size: 13px;
+		color: var(--muted);
+	}
+	.title {
+		font-size: 14px;
+		line-height: 1.35;
+	}
+	a.artifact:hover .title {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+</style>

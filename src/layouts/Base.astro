@@ -1,0 +1,34 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+
+interface Props {
+	title?: string;
+	description?: string;
+	noindex?: boolean;
+	/** Share image (absolute or site path). Defaults to /og-default.png. */
+	image?: string;
+	/** 'article' for article pages. */
+	type?: 'website' | 'article';
+	/** No nav item is marked current (404). */
+	noCurrent?: boolean;
+}
+const { title, description, noindex, image, type, noCurrent } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-CA">
+	<head>
+		<BaseHead title={title} description={description} noindex={noindex} image={image} type={type} />
+		<slot name="head" />
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<Nav noCurrent={noCurrent} />
+		<main id="main">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

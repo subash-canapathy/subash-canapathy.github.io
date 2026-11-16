@@ -1,0 +1,168 @@
+---
+/**
+ * Photography (PLAN §6): the albums, then the camera roll (every photo, newest first).
+ * Headings and the Instagram button sit on the 1120 edges; only the photo grids widen to 1200.
+ */
+import { Image } from 'astro:assets';
+import Button from '../../components/Button.astro';
+import PhotoGrid from '../../components/PhotoGrid.astro';
+import Base from '../../layouts/Base.astro';
+import { getAlbums, getPhotos } from '../../lib/photos';
+import { getProfile } from '../../lib/profile';
+import { url } from '../../lib/url';
+
+const profile = await getProfile();
+const photos = getPhotos();
+const albums = await getAlbums();
+---
+
+<Base title="Photography" description="Street and travel photography by Subash Canapathy.">
+	<div class="container head">
+		<h1 class="section-title">Albums</h1>
+		{profile.links.instagram && <Button variant="secondary" icon="instagram" href={profile.links.instagram}>Instagram</Button>}
+	</div>
+	<div class="container container--photos">
+		<ul class="albums">
+			{
+				albums.map((album) => {
+					const Tag = album.photos.length > 0 ? 'a' : 'div';
+					return (
+						<li>
+							<Tag class:list={['album', { 'album--empty': album.photos.length === 0 }]} href={Tag === 'a' ? url(`/photography/${album.id}/`) : undefined}>
+								<span class="album__cover">
+									{album.cover && <Image src={album.cover.src} alt="" width={600} height={450} fit="cover" loading="eager" />}
+								</span>
+								<span class="album__strip">
+									<span class="album__title">{album.title}</span>
+									{album.photos.length > 0 ? <span aria-hidden="true">→</span> : <span class="album__soon">Soon</span>}
+								</span>
+							</Tag>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+
+	<div class="container roll-head">
+		<h2 class="section-title">Camera roll</h2>
+		<p>Every photo, newest first</p>
+	</div>
+	<div class="container container--photos roll">
+		{
+			photos.length > 0 ? (
+				<PhotoGrid photos={photos} />
+			) : (
+				<p class="empty">
+					No photos yet. Add some with <code>npm run photos:add</code> (see the README).
+				</p>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-block: 40px 24px;
+	}
+	.albums {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 24px;
+	}
+	.album {
+		display: block;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--card);
+		overflow: hidden;
+		transition: border-color var(--t-fast);
+	}
+	a.album:hover {
+		border-color: var(--muted);
+	}
+	.album__cover {
+		display: block;
+		aspect-ratio: 4 / 3;
+		background: var(--surface);
+	}
+	.album__cover :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.album__strip {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 14px 16px;
+	}
+	.album__title {
+		position: relative;
+		font-family: var(--font-serif-stack);
+		font-size: 20px;
+		font-weight: 500;
+		padding-bottom: 4px;
+	}
+	a.album:hover .album__title::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+	}
+	.album--empty {
+		color: var(--muted);
+	}
+	.album__soon {
+		font-size: 13px;
+	}
+	.roll-head {
+		margin-top: 48px;
+	}
+	.roll-head h2 {
+		border-top: 1px solid var(--line-section);
+		padding-top: 32px;
+	}
+	.roll-head p {
+		padding-block: 4px 20px;
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.roll {
+		padding-bottom: 64px;
+	}
+	@media (max-width: 720px) {
+		.head {
+			padding-block: 24px 16px;
+		}
+		.albums {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+		}
+		.album__strip {
+			padding: 10px 12px;
+		}
+		.album__title {
+			font-size: 18px;
+		}
+		.roll-head {
+			margin-top: 32px;
+		}
+		.roll-head h2 {
+			padding-top: 24px;
+		}
+	}
+</style>

@@ -1,0 +1,285 @@
+---
+/**
+ * Style guide (noindex, not in the sitemap). Every base component in light and dark, side by side,
+ * mirroring the canvas Design system board for review (PLAN §10a item 5).
+ */
+import Badge from '../../components/Badge.astro';
+import Button from '../../components/Button.astro';
+import Card from '../../components/Card.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import Highlight from '../../components/Highlight.astro';
+import Meta from '../../components/Meta.astro';
+import NavMark from '../../components/NavMark.astro';
+import Pill from '../../components/Pill.astro';
+import Portrait from '../../components/Portrait.astro';
+import TextLink from '../../components/TextLink.astro';
+import Base from '../../layouts/Base.astro';
+
+const themes = ['light', 'dark'] as const;
+const swatches = [
+	['Paper', '--bg'],
+	['Surface', '--surface'],
+	['Card', '--card'],
+	['Ink', '--ink'],
+	['Ink 2', '--ink-2'],
+	['Muted', '--muted'],
+	['Row line', '--line'],
+	['Section line', '--line-section'],
+	['Control line', '--line-control'],
+	['Yellow', '--yellow'],
+	['Caret', '--caret'],
+	['Footer', '--foot-bg'],
+] as const;
+const hats = [
+	['Coach', '--hat-coach'],
+	['Strategist', '--hat-strategist'],
+	['Builder', '--hat-builder'],
+	['Operator', '--hat-operator'],
+] as const;
+---
+
+<Base title="Style guide" noindex>
+	<div class="container sg-head">
+		<h1 class="page-title">Style guide</h1>
+		<p class="lede">Base components in both themes. Compare with the Design system board on the canvas.</p>
+	</div>
+
+	<div class="container sg-grid">
+		{
+			themes.map((theme) => (
+				<section class="panel" data-theme={theme} aria-label={`${theme} theme`}>
+					<p class="panel__label">{theme === 'light' ? 'Light' : 'Dark'}</p>
+
+					<h2 class="sg-h">Colour</h2>
+					<div class="swatches">
+						{swatches.map(([name, v]) => (
+							<div class="swatch">
+								<span class="swatch__chip" style={`background: var(${v})`} />
+								<span class="swatch__name">{name}</span>
+							</div>
+						))}
+					</div>
+					<div class="swatches swatches--hats">
+						{hats.map(([name, v]) => (
+							<div class="swatch">
+								<span class="swatch__chip" style={`background: var(${v})`} />
+								<span class="swatch__name">{name}</span>
+							</div>
+						))}
+					</div>
+
+					<h2 class="sg-h">Type</h2>
+					<div class="stack">
+						<p class="title-line">Partner Director of Engineering, Microsoft</p>
+						<p class="display">Subash Canapathy</p>
+						<p class="tagline">
+							Engineering Leader, AI Change Agent, &amp;&nbsp;<Highlight>a forever humanist.</Highlight>
+						</p>
+						<p class="section-title">Career Highlights</p>
+						<p class="lede">Body copy for intros and summaries, Inter 17 on ink 2.</p>
+						<Eyebrow>Agentic SDLC</Eyebrow>
+						<Meta items={['Oct 14, 2026', '23 min read', 'Agentic SDLC']} />
+					</div>
+
+					<h2 class="sg-h">Nav</h2>
+					<div class="stack">
+						<NavMark size="desktop" />
+						<div class="navdemo">
+							<span class="navdemo__link is-current">
+								Home<span class="navdemo__bar" aria-hidden="true" />
+							</span>
+							<span class="navdemo__link is-hover">
+								Articles<span class="navdemo__bar" aria-hidden="true" />
+							</span>
+							<span class="navdemo__link">
+								Profile<span class="navdemo__bar" aria-hidden="true" />
+							</span>
+						</div>
+						<Meta size={13} items={['current page', 'hover', 'rest']} />
+					</div>
+
+					<h2 class="sg-h">Buttons</h2>
+					<div class="row">
+						<Button variant="primary">View profile</Button>
+						<Button variant="secondary" icon="linkedin">LinkedIn</Button>
+						<Button variant="secondary" icon="instagram">Instagram</Button>
+					</div>
+					<div class="row">
+						<Button variant="secondary">Secondary</Button>
+						<Button variant="accent">Get in touch</Button>
+						<TextLink href="#">All articles</TextLink>
+					</div>
+
+					<h2 class="sg-h">Pills and badges</h2>
+					<div class="row">
+						<Pill href="#">All</Pill>
+						<Pill href="#" selected>
+							AI transformation
+						</Pill>
+						<Pill size="sm">Mentoring</Pill>
+						<Badge>Latest</Badge>
+						<Badge>Pinned</Badge>
+					</div>
+
+					<h2 class="sg-h">Card</h2>
+					<Card variant="surface">
+						<Eyebrow>
+							<Badge>Latest</Badge>
+							<span>Agentic SDLC</span>
+						</Eyebrow>
+						<p class="card-title">Shaped Specs for agentic product development</p>
+						<Meta items={['Oct 14, 2026', '23 min read']} />
+					</Card>
+
+					<h2 class="sg-h">Portrait</h2>
+					<div class="row">
+						<Portrait size={120} />
+						<Portrait size={88} />
+					</div>
+
+					<h2 class="sg-h">Focus</h2>
+					<p class="hint">Tab through this panel: every control shows a 2px ink ring at a 3px offset.</p>
+				</section>
+			))
+		}
+	</div>
+</Base>
+
+<style>
+	.sg-head {
+		padding-block: 40px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.sg-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+		padding-bottom: 64px;
+	}
+	@media (max-width: 900px) {
+		.sg-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+	/* Each panel resolves the tokens in its own colour scheme. */
+	.panel {
+		background: var(--bg);
+		color: var(--ink);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		padding: 28px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		min-width: 0;
+	}
+	.panel__label {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.sg-h {
+		margin-top: 12px;
+		padding-top: 14px;
+		border-top: 1px solid var(--line-section);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--ink-2);
+	}
+	.stack {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+	}
+	.swatches {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: 10px;
+	}
+	.swatches--hats {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.swatch {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.swatch__chip {
+		height: 36px;
+		border-radius: var(--radius);
+		border: 1px solid var(--line);
+	}
+	.swatch__name {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.title-line {
+		font-size: var(--fs-title-line);
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--ink-2);
+	}
+	.display {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 44px;
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+	}
+	.tagline {
+		font-family: var(--font-serif-stack);
+		font-style: italic;
+		font-size: 22px;
+		line-height: 1.4;
+	}
+	.card-title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 24px;
+		line-height: 1.2;
+	}
+	.hint {
+		font-size: 14px;
+		color: var(--ink-2);
+	}
+	/* Static copy of the nav link states (the real ones live in Nav.astro). */
+	.navdemo {
+		display: flex;
+		gap: 28px;
+		font-size: 15px;
+	}
+	.navdemo__link {
+		position: relative;
+		padding: 10px 0 7px;
+	}
+	.navdemo__link.is-current {
+		font-weight: 500;
+	}
+	.navdemo__bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -3px;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		opacity: 0;
+	}
+	.navdemo__link.is-hover .navdemo__bar {
+		background: var(--line-section);
+		opacity: 1;
+	}
+	.navdemo__link.is-current .navdemo__bar {
+		background: var(--yellow);
+		opacity: 1;
+	}
+</style>

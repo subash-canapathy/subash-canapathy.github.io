@@ -1,0 +1,58 @@
+---
+/**
+ * Portrait (option 2): the ink caricature on a paper disc with a thin section-line ring.
+ * Dark mode: the drawing is never inverted or filtered; it sits on a dimmed paper disc,
+ * framed by a 4px page-colour gap and a 1px light ring. Disc, gap and ring live on the
+ * wrapper; the image carries no filter (DESIGN.md › Portrait).
+ *
+ * Image: src/assets/portrait.png (transparent line art) or portrait.svg. Until the file is
+ * added, the disc renders empty so the layout can still be reviewed.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Props {
+	size?: number; // px; Home desktop 240
+	phoneSize?: number; // px at ≤720px; Home phone 88
+	class?: string;
+}
+const { size = 240, phoneSize = size, class: className } = Astro.props;
+
+const found = import.meta.glob<{ default: ImageMetadata }>('../assets/portrait.{png,svg,webp,jpg}', { eager: true });
+const src = Object.values(found)[0]?.default;
+---
+
+<div class:list={['portrait', className]} style={`--size: ${size}px; --size-phone: ${phoneSize}px`}>
+	{
+		src ? (
+			<Image src={src} alt="Ink caricature portrait of Subash Canapathy" width={size} densities={[1, 2]} loading="eager" />
+		) : (
+			<span class="visually-hidden">Portrait coming soon</span>
+		)
+	}
+</div>
+
+<style>
+	.portrait {
+		width: var(--size);
+		height: var(--size);
+		flex-shrink: 0;
+		border-radius: var(--radius-pill);
+		background: var(--portrait-bg);
+		border: 1px solid var(--portrait-ring);
+		box-shadow: var(--portrait-shadow);
+		overflow: hidden;
+	}
+	@media (max-width: 720px) {
+		.portrait {
+			width: var(--size-phone);
+			height: var(--size-phone);
+		}
+	}
+	.portrait :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+</style>

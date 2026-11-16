@@ -1,0 +1,113 @@
+---
+/**
+ * Tag filter pills for the Articles pages. The most-used tags are pills; the rest sit under
+ * "More tags". Each pill opens that tag's page. On phones the row scrolls sideways.
+ */
+import { TOP_TAGS, type TagCount } from '../lib/articles';
+import { url } from '../lib/url';
+
+interface Props {
+	tags: TagCount[];
+	total: number;
+	/** Slug of the selected tag; undefined = "All". */
+	selected?: string;
+}
+const { tags, total, selected } = Astro.props;
+let top = tags.slice(0, TOP_TAGS);
+let more = tags.slice(TOP_TAGS);
+// A selected tag from the "more" group is shown as a pill so the selection is visible.
+const chosen = more.find((t) => t.slug === selected);
+if (chosen) {
+	top = [...top, chosen];
+	more = more.filter((t) => t !== chosen);
+}
+const href = (slug: string) => url(`/articles/tag/${slug}/`);
+---
+
+<div class="pills" role="group" aria-label="Filter by tag">
+	<a class:list={['pill', { 'is-selected': !selected }]} href={url('/articles/')} aria-current={!selected ? 'true' : undefined}>All · {total}</a>
+	{
+		top.map((t) => (
+			<a class:list={['pill', { 'is-selected': t.slug === selected }]} href={href(t.slug)} aria-current={t.slug === selected ? 'true' : undefined}>
+				{t.tag} · {t.count}
+			</a>
+		))
+	}
+	{
+		more.length > 0 && (
+			<details class="more">
+				<summary class="pill">More tags ▾</summary>
+				<div class="more__list">
+					{more.map((t) => (
+						<a class="pill" href={href(t.slug)}>
+							{t.tag} · {t.count}
+						</a>
+					))}
+				</div>
+			</details>
+		)
+	}
+</div>
+
+<style>
+	.pills {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		padding-top: 12px;
+	}
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		min-height: 40px;
+		padding: 0 16px;
+		border: 1px solid var(--line-control);
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: var(--ink);
+		font-size: 14px;
+		white-space: nowrap;
+		cursor: pointer;
+		transition:
+			background-color var(--t-fast),
+			border-color var(--t-fast);
+	}
+	.pill:hover {
+		background: var(--surface);
+		border-color: var(--muted);
+	}
+	.pill.is-selected {
+		background: var(--btn-bg);
+		border-color: var(--btn-bg);
+		color: var(--btn-fg);
+		font-weight: 500;
+	}
+	.more {
+		display: contents;
+	}
+	.more > summary {
+		list-style: none;
+	}
+	.more > summary::-webkit-details-marker {
+		display: none;
+	}
+	.more[open] > summary {
+		background: var(--surface);
+	}
+	.more__list {
+		flex-basis: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	@media (max-width: 720px) {
+		.pills:not(:has(.more[open])) {
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			margin-inline: calc(-1 * var(--pad-x));
+			padding-inline: var(--pad-x);
+			scrollbar-width: none;
+		}
+	}
+</style>

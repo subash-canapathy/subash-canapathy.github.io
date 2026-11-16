@@ -1,0 +1,43 @@
+---
+/** "← Newer" · "Page 2 of 3" · "Older →". Rendered only when there is more than one page. */
+import { url } from '../lib/url';
+import Button from './Button.astro';
+
+interface Props {
+	page: number;
+	pages: number;
+}
+const { page, pages } = Astro.props;
+const href = (n: number) => (n === 1 ? url('/articles/') : url(`/articles/page/${n}/`));
+---
+
+{
+	pages > 1 && (
+		<nav class="pagination" aria-label="Article pages">
+			<span class="slot">{page > 1 && <Button variant="secondary" href={href(page - 1)}>← Newer</Button>}</span>
+			<span class="count">
+				Page {page} of {pages}
+			</span>
+			<span class="slot slot--end">{page < pages && <Button variant="secondary" href={href(page + 1)}>Older →</Button>}</span>
+		</nav>
+	)
+}
+
+<style>
+	.pagination {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 16px;
+		margin-top: 8px;
+		padding-top: 24px;
+		border-top: 1px solid var(--line-section);
+	}
+	.slot--end {
+		justify-self: end;
+	}
+	.count {
+		font-size: 14px;
+		color: var(--muted);
+	}
+</style>

@@ -1,0 +1,1164 @@
+---
+/**
+ * Profile (PLAN §14.3): masthead → Impact → How I work → Featured work → Experience + sidebar.
+ * Everything comes from src/content/profile/ (profile.yaml, companies.yaml, one folder per role).
+ */
+import { render } from 'astro:content';
+import ArtifactCard from '../../components/ArtifactCard.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import LogoTile from '../../components/LogoTile.astro';
+import Portrait from '../../components/Portrait.astro';
+import Base from '../../layouts/Base.astro';
+import { articleUrl, getArticles } from '../../lib/articles';
+import { dateRange, duration, getCareer, monthYear, yearRange } from '../../lib/profile';
+import { url } from '../../lib/url';
+
+const { profile, groups, earlier, featured, companyOf, employerOf } = await getCareer();
+const articles = await getArticles();
+const bodies = new Map(
+	await Promise.all(groups.flatMap((g) => g.roles).map(async (r) => [r.id, (await render(r)).Content] as const)),
+);
+const LABEL = { video: 'Video', talk: 'Talk', page: 'Product page', post: 'Launch post', article: 'Article' } as const;
+const HAT = { Coach: 'coach', Strategist: 'strategist', Builder: 'builder', Operator: 'operator' } as const;
+const blocks = profile.working_style.flatMap((w) => Array.from({ length: w.percent / 5 }, () => HAT[w.hat]));
+const practices = (profile.ai_transformation?.practices ?? []).map((p) => {
+	const article = articles.find((a) => a.id === p.article);
+	return { ...p, title: article?.data.title ?? p.title ?? p.name, href: article ? articleUrl(article) : undefined };
+});
+const resumeHref = url('/SubashCanapathy-Resume.pdf');
+const earlierYears = earlier.length ? `${earlier.at(-1)!.data.start.slice(0, 4)} – ${earlier[0]!.data.end?.slice(0, 4) ?? 'now'}` : '';
+const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].join(', ');
+---
+
+<Base title="Profile" description={`${profile.name}, ${profile.title} at ${profile.employer}. ${profile.home_intro}`}>
+	<div class="container profile">
+		<section class="masthead" aria-labelledby="p-name">
+			<div class="masthead__text">
+				<div class="masthead__id">
+					<h1 id="p-name">{profile.name}</h1>
+					<p class="masthead__title">{profile.title}, {profile.employer}</p>
+				</div>
+				{profile.summary.map((para) => <p class="masthead__para">{para}</p>)}
+				<p class="masthead__links">
+					{
+						profile.location && (
+							<span>
+								<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.3-6-11a6 6 0 0 1 12 0c0 5.7-6 11-6 11z" /><circle cx="12" cy="10" r="2.2" /></svg>
+								{profile.location}
+							</span>
+						)
+					}
+					<a href={profile.links.linkedin}>
+						<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V17M8 7.2v.1M12 17v-3.6a2.4 2.4 0 0 1 4.8 0V17M12 10.5V17" /></svg>
+						LinkedIn
+					</a>
+					<a href={profile.links.github}>
+						<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.3-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" /></svg>
+						GitHub
+					</a>
+				</p>
+			</div>
+			<div class="masthead__side">
+				<a class="resume" href={resumeHref} download aria-label="Download resume (PDF)">
+					<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg>
+					<span class="resume__label">Resume</span>
+					<span class="resume__pdf">PDF</span>
+				</a>
+				<Portrait size={184} phoneSize={0} class="masthead__portrait" />
+			</div>
+		</section>
+
+		{
+			profile.impact.length > 0 && (
+				<section class="block" aria-labelledby="impact-h">
+					<h2 class="section-title" id="impact-h">Impact</h2>
+					<div class="metrics">
+						{profile.impact.map((m) => (
+							<div class="metric">
+								<span class="metric__value">{m.value}</span>
+								<span class="metric__label">{m.label}</span>
+							</div>
+						))}
+					</div>
+					{profile.ai_transformation && (
+						<div class="ai">
+							<div class="ai__lead">
+								<span class="ai__icon">
+									<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
+								</span>
+								<h3>Organizational AI transformation</h3>
+								<p>{profile.ai_transformation.text}</p>
+							</div>
+							<div class="ai__articles">
+								<Eyebrow>Related articles</Eyebrow>
+								<div class="ai__grid">
+									{practices.map((p) =>
+										p.href ? (
+											<a class="ai__card" href={p.href}>
+												<span class="ai__practice">{p.name}</span>
+												<span class="ai__title">{p.title}</span>
+												<span class="ai__more">Article →</span>
+											</a>
+										) : (
+											<div class="ai__card">
+												<span class="ai__practice">{p.name}</span>
+												<span class="ai__title">{p.title}</span>
+												<span class="ai__more">Article coming soon</span>
+											</div>
+										),
+									)}
+								</div>
+							</div>
+						</div>
+					)}
+				</section>
+			)
+		}
+
+		{
+			(profile.working_style.length > 0 || Object.keys(profile.competencies).length > 0) && (
+				<section class="block" aria-labelledby="how-h">
+					<h2 class="section-title" id="how-h">How I work</h2>
+					<div class="how">
+						{profile.working_style.length > 0 && (
+							<div class="panel">
+								<div>
+									<h3>Working style</h3>
+									<p class="panel__note">Each block is 5% of a typical week</p>
+								</div>
+								<div class="blocks" role="img" aria-label={`Share of a typical week: ${profile.working_style.map((w) => `${w.hat} ${w.percent}%`).join(', ')}`}>
+									{blocks.map((hat) => <span class={`blk hat-${hat}`} />)}
+								</div>
+								<p class="legend">
+									{profile.working_style.map((w) => (
+										<span>
+											<span class={`swatch hat-${HAT[w.hat]}`} />
+											{w.hat} <span class="muted">{w.percent}%</span>
+										</span>
+									))}
+								</p>
+								<ul class="hats">
+									{profile.working_style.map((w) => (
+										<li>
+											<span class="hats__name">
+												<span class={`swatch swatch--sm hat-${HAT[w.hat]}`} />
+												{w.hat}
+											</span>
+											<span class="hats__line">{w.line ?? w.covers}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+						{Object.keys(profile.competencies).length > 0 && (
+							<div class="panel">
+								<h3>Executive competencies</h3>
+								{Object.entries(profile.competencies).map(([group, items]) => (
+									<div class="comp">
+										<Eyebrow>{group}</Eyebrow>
+										<p class="comp__pills">
+											{items.map((item) => <span class="comp__pill">{item}</span>)}
+										</p>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</section>
+			)
+		}
+
+		{
+			featured.length > 0 && (
+				<section class="block" aria-labelledby="fw-h">
+					<div class="block__head">
+						<h2 class="section-title" id="fw-h">Featured work</h2>
+						<a class="jump" href="#experience">
+							Full experience ↓<span aria-hidden="true" />
+						</a>
+					</div>
+					<div class="featured">
+						{featured.map((r) => {
+							const lead = r.data.artifacts[r.data.featured!.artifact];
+							const types = [...new Set(r.data.artifacts.map((a) => LABEL[a.type]))];
+							return (
+								<article class="fcard">
+									{lead ? (
+										<ArtifactCard artifact={lead} articles={articles} previewOnly />
+									) : (
+										<div class="fcard__blank">
+											<span>{companyOf(r).name}</span>
+										</div>
+									)}
+									<p class="fcard__meta">
+										<LogoTile company={companyOf(r)} size={30} />
+										<span>
+											{employerOf(r).name} · {yearRange(r.data.start, r.data.end)}
+										</span>
+									</p>
+									<h3>{r.data.featured!.title}</h3>
+									<p class="fcard__line">{r.data.featured!.line ?? r.data.outcome}</p>
+									{types.length > 0 && <p class="fcard__types">{types.join(' · ')}</p>}
+								</article>
+							);
+						})}
+					</div>
+				</section>
+			)
+		}
+
+		<div class="lower">
+			<section class="experience" id="experience" aria-labelledby="xp-h">
+				<div class="block__head">
+					<h2 class="section-title" id="xp-h">Experience</h2>
+					<button type="button" class="expand" data-expand-all aria-pressed="false">Expand all</button>
+				</div>
+				<div class="timeline">
+					{
+						groups.map((g) => (
+							<div class="group">
+								<div class="rail">
+									<LogoTile company={g.company} />
+									<span class="rail__line" aria-hidden="true" />
+								</div>
+								<div class="group__body">
+									<div class="group__head">
+										<h3>{g.company.name}</h3>
+										<span class="muted">
+											{dateRange(g.start, g.end)} · {duration(g.start, g.end)}
+										</span>
+									</div>
+									{g.roles.map((r) => {
+										const Body = bodies.get(r.id)!;
+										const hasBody = (r.body ?? '').trim().length > 0;
+										return (
+											<details class="role" open={r.data.open} data-role>
+												<summary>
+													<span class="role__title">{r.data.title}</span>
+													<span class="role__dates">
+														{dateRange(r.data.start, r.data.end)}
+														<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+													</span>
+													<span class="role__scope">
+														{r.data.scope}
+														{r.data.location && ` · ${r.data.location}`}
+													</span>
+													<span class="role__outcome">{r.data.outcome}</span>
+												</summary>
+												<div class="role__more">
+													{hasBody && (
+														<>
+															<Eyebrow>What I built</Eyebrow>
+															<div class="role__built">
+																<Body />
+															</div>
+														</>
+													)}
+													{r.data.scale && (
+														<>
+															<Eyebrow>Scale &amp; architecture</Eyebrow>
+															<dl class="scale">
+																{Object.entries(r.data.scale).map(([k, v]) => (
+																	<>
+																		<dt>{k}</dt>
+																		<dd>{v}</dd>
+																	</>
+																))}
+															</dl>
+														</>
+													)}
+													{r.data.artifacts.length > 0 && (
+														<>
+															<Eyebrow>Artifacts</Eyebrow>
+															<div class="artifacts">
+																{r.data.artifacts.map((a) => (
+																	<ArtifactCard artifact={a} articles={articles} />
+																))}
+															</div>
+														</>
+													)}
+													{!hasBody && !r.data.scale && r.data.artifacts.length === 0 && <p class="muted">No further detail yet.</p>}
+												</div>
+											</details>
+										);
+									})}
+								</div>
+							</div>
+						))
+					}
+					{
+						earlier.length > 0 && (
+							<div class="group">
+								<div class="rail">
+									<span class="rail__dot" aria-hidden="true" />
+								</div>
+								<div class="group__body group__body--last">
+									<div class="group__head">
+										<h3>Before {profile.earlier_roles_before}</h3>
+										<span class="muted">{earlierEmployers}</span>
+									</div>
+									<details class="role" data-role>
+										<summary class="earlier__summary">
+											<span>
+												Earlier roles <span class="muted">· {earlierYears}</span>
+											</span>
+											<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+										</summary>
+										<ul class="earlier">
+											{earlier.map((r) => (
+												<li>
+													<LogoTile company={employerOf(r)} size={40} />
+													<span class="earlier__text">
+														<strong>{r.data.title}</strong>
+														<span>
+															{r.data.scope}
+															{r.data.location && ` · ${r.data.location}`}
+														</span>
+														<span>{r.data.outcome}</span>
+													</span>
+													<span class="earlier__dates">{dateRange(r.data.start, r.data.end)}</span>
+												</li>
+											))}
+										</ul>
+									</details>
+								</div>
+							</div>
+						)
+					}
+				</div>
+			</section>
+
+			<aside class="sidebar">
+				{
+					profile.education.length > 0 && (
+						<section class="side">
+							<h2>Education</h2>
+							{profile.education.map((e) => (
+								<p class="side__item">
+									<strong>{e.degree}</strong>
+									<span>{e.school}</span>
+									{e.years && <span class="muted small">{e.years}</span>}
+								</p>
+							))}
+						</section>
+					)
+				}
+				{
+					profile.patents.length > 0 && (
+						<section class="side">
+							<h2>Patents</h2>
+							<ul>
+								{profile.patents.map((p) => {
+									const meta = [p.company, p.number, p.date && monthYear(p.date)].filter(Boolean).join(' · ');
+									return (
+										<li>
+											{p.url ? (
+												<a href={p.url}>
+													<strong>{p.title}</strong>
+													<span class="muted small">{meta}</span>
+												</a>
+											) : (
+												<span>
+													<strong>{p.title}</strong>
+													<span class="muted small">{meta}</span>
+												</span>
+											)}
+										</li>
+									);
+								})}
+							</ul>
+						</section>
+					)
+				}
+				{
+					profile.languages.length > 0 && (
+						<section class="side">
+							<h2>Languages</h2>
+							<ul>
+								{profile.languages.map((l) => (
+									<li class="side__row">
+										<span>{l.name}</span>
+										{l.level && <span class="muted">{l.level}</span>}
+									</li>
+								))}
+							</ul>
+						</section>
+					)
+				}
+			</aside>
+		</div>
+	</div>
+</Base>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('[data-expand-all]');
+	if (button) {
+		const roles = () => [...document.querySelectorAll<HTMLDetailsElement>('details[data-role]')];
+		button.addEventListener('click', () => {
+			const expand = button.getAttribute('aria-pressed') !== 'true';
+			roles().forEach((d) => (d.open = expand));
+			button.setAttribute('aria-pressed', String(expand));
+			button.textContent = expand ? 'Collapse all' : 'Expand all';
+		});
+	}
+</script>
+
+<style>
+	.profile {
+		padding-bottom: 56px;
+	}
+	.muted {
+		color: var(--muted);
+	}
+	.small {
+		font-size: 14px;
+	}
+	h3 {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+	}
+
+	/* Masthead */
+	.masthead {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 200px;
+		gap: 56px;
+		align-items: start;
+		padding: 48px 0 32px;
+	}
+	.masthead__text {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		max-width: 740px;
+	}
+	.masthead__id {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-bottom: 6px;
+	}
+	.masthead h1 {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 56px;
+		line-height: 1.04;
+		letter-spacing: -0.02em;
+	}
+	.masthead__title {
+		font-size: 20px;
+		font-weight: 500;
+		line-height: 1.35;
+	}
+	.masthead__para {
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--ink-2);
+	}
+	.masthead__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 22px;
+		padding-top: 4px;
+		font-size: 15px;
+		color: var(--ink-2);
+	}
+	.masthead__links > * {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		min-height: 32px;
+	}
+	.masthead__links a:hover {
+		color: var(--ink);
+	}
+	.masthead__side {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 72px;
+		padding-top: 4px;
+	}
+	.resume {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: var(--control-h);
+		padding: 0 18px 0 15px;
+		border-radius: var(--radius-pill);
+		background: var(--btn-bg);
+		color: var(--btn-fg);
+		font-size: 15px;
+		font-weight: 500;
+		transition: background-color var(--t-fast);
+	}
+	.resume:hover {
+		background: var(--btn-bg-hover);
+	}
+	.resume__pdf {
+		color: light-dark(#f2d872, #8c6a12);
+	}
+
+	/* Sections */
+	.block {
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+		padding-bottom: 56px;
+	}
+	.block__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.jump {
+		position: relative;
+		font-size: 15px;
+		line-height: 1.25;
+		padding-bottom: 5px;
+	}
+	.jump span {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+	}
+
+	/* Impact */
+	.metrics {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 28px;
+	}
+	.metric {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line-section);
+	}
+	.metric__value {
+		font-family: var(--font-serif-stack);
+		font-size: 44px;
+		font-weight: 500;
+		line-height: 1.05;
+	}
+	.metric__label {
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--ink-2);
+	}
+	.ai {
+		display: grid;
+		grid-template-columns: 300px minmax(0, 1fr);
+		gap: 24px;
+		align-items: start;
+		padding: 26px;
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		background: var(--surface);
+	}
+	.ai__lead {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.ai__icon {
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-pill);
+		background: var(--card);
+	}
+	.ai__lead h3 {
+		font-size: 24px;
+		line-height: 1.2;
+	}
+	.ai__lead p {
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--ink-2);
+	}
+	.ai__articles {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		min-width: 0;
+	}
+	.ai__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 14px;
+	}
+	.ai__card {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 16px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--card);
+		transition: border-color var(--t-fast);
+	}
+	a.ai__card:hover {
+		border-color: var(--line-control);
+	}
+	.ai__practice {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.ai__title {
+		font-family: var(--font-serif-stack);
+		font-size: 18px;
+		line-height: 1.3;
+	}
+	.ai__more {
+		font-size: 13px;
+		color: var(--muted);
+	}
+
+	/* How I work */
+	.how {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 22px;
+	}
+	.panel {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		min-width: 0;
+		padding: 24px;
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		background: var(--surface);
+	}
+	.panel h3 {
+		font-size: 22px;
+	}
+	.panel__note {
+		margin-top: 4px;
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.blocks {
+		display: grid;
+		grid-template-columns: repeat(10, minmax(0, 1fr));
+		gap: 5px;
+		padding: 4px 0 2px;
+	}
+	.blk {
+		aspect-ratio: 1;
+		border-radius: 5px;
+		box-shadow: inset 0 0 0 1px rgba(26, 25, 23, 0.1);
+	}
+	.hat-coach {
+		background: var(--hat-coach);
+	}
+	.hat-strategist {
+		background: var(--hat-strategist);
+	}
+	.hat-builder {
+		background: var(--hat-builder);
+	}
+	.hat-operator {
+		background: var(--hat-operator);
+	}
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 18px;
+		font-size: 14px;
+	}
+	.legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+	}
+	.swatch {
+		width: 11px;
+		height: 11px;
+		border-radius: 3px;
+		box-shadow: inset 0 0 0 1px rgba(26, 25, 23, 0.1);
+		flex-shrink: 0;
+	}
+	.swatch--sm {
+		width: 9px;
+		height: 9px;
+	}
+	.hats {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.hats li {
+		display: grid;
+		grid-template-columns: 104px minmax(0, 1fr);
+		gap: 12px;
+		align-items: baseline;
+		padding: 9px 0;
+		border-top: 1px solid var(--line);
+	}
+	.hats__name {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 8px;
+		font-family: var(--font-serif-stack);
+		font-size: 18px;
+	}
+	.hats__line {
+		font-size: 14px;
+		line-height: 1.45;
+		color: var(--ink-2);
+	}
+	.comp {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 14px;
+		border-top: 1px solid var(--line);
+	}
+	.comp__pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.comp__pill {
+		display: inline-flex;
+		align-items: center;
+		min-height: 34px;
+		padding: 0 14px;
+		border: 1px solid var(--line-control);
+		border-radius: var(--radius-pill);
+		background: var(--card);
+		font-size: 14px;
+		line-height: 1.2;
+	}
+
+	/* Featured work */
+	.featured {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 22px;
+	}
+	.fcard {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 14px 14px 18px;
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		background: var(--card);
+	}
+	.fcard__blank {
+		aspect-ratio: 16 / 9;
+		display: flex;
+		align-items: flex-end;
+		padding: 12px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.fcard__meta {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 13px;
+		color: var(--muted);
+	}
+	.fcard h3 {
+		font-size: 21px;
+		line-height: 1.25;
+	}
+	.fcard__line {
+		font-size: 15px;
+		line-height: 1.55;
+		color: var(--ink-2);
+	}
+	.fcard__types {
+		margin-top: auto;
+		font-size: 13px;
+		color: var(--muted);
+	}
+
+	/* Experience + sidebar */
+	.lower {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 300px;
+		gap: 48px;
+		align-items: start;
+	}
+	.experience {
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+		min-width: 0;
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+	.expand {
+		min-height: var(--control-h);
+		padding: 0 4px;
+		background: transparent;
+		border: none;
+		font-size: 15px;
+		color: var(--ink-2);
+		cursor: pointer;
+	}
+	.expand:hover {
+		color: var(--ink);
+	}
+	.group {
+		display: grid;
+		grid-template-columns: 44px minmax(0, 1fr);
+		gap: 18px;
+	}
+	.rail {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.rail__line {
+		flex: 1;
+		width: 1px;
+		margin-top: 8px;
+		background: var(--line-section);
+	}
+	.rail__dot {
+		width: 9px;
+		height: 9px;
+		margin-top: 18px;
+		border-radius: var(--radius-pill);
+		background: var(--line-control);
+	}
+	.group__body {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding-bottom: 32px;
+	}
+	.group__body--last {
+		padding-bottom: 0;
+	}
+	.group__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0 12px;
+		min-height: 44px;
+		font-size: 14px;
+	}
+	.group__head h3 {
+		font-size: 24px;
+		line-height: 44px;
+	}
+	.role {
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--card);
+	}
+	.role summary {
+		list-style: none;
+		cursor: pointer;
+		padding: 16px 18px;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 4px 16px;
+		align-items: start;
+		border-radius: 8px;
+	}
+	.role summary::-webkit-details-marker {
+		display: none;
+	}
+	.role__title {
+		font-size: 17px;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+	.role__dates {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 14px;
+		color: var(--muted);
+		white-space: nowrap;
+	}
+	.role__dates svg {
+		color: var(--ink-2);
+		transition: transform var(--t-fast);
+	}
+	.role[open] > summary svg {
+		transform: rotate(180deg);
+	}
+	.role__scope,
+	.role__outcome {
+		grid-column: 1 / -1;
+		font-size: 15px;
+	}
+	.role__scope {
+		color: var(--ink-2);
+	}
+	.role__more {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		margin: 0 18px;
+		padding: 18px 0 20px;
+		border-top: 1px solid var(--line);
+	}
+	.role__built {
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--ink-2);
+	}
+	.role__built :global(ul),
+	.role__built :global(ol) {
+		margin: 0;
+		padding-left: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.role__built :global(p) {
+		margin: 0 0 10px;
+	}
+	.role__built :global(strong) {
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.scale {
+		margin: 0;
+		display: grid;
+		grid-template-columns: 120px minmax(0, 1fr);
+		gap: 8px 16px;
+		font-size: 15px;
+	}
+	.scale dt {
+		color: var(--muted);
+	}
+	.scale dd {
+		margin: 0;
+	}
+	.artifacts {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 14px;
+	}
+	.earlier__summary.earlier__summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 52px;
+		padding: 0 18px;
+		font-size: 16px;
+		font-weight: 500;
+	}
+	.earlier__summary .muted {
+		font-weight: 400;
+	}
+	.earlier {
+		list-style: none;
+		margin: 0;
+		padding: 0 18px 12px;
+	}
+	.earlier li {
+		display: grid;
+		grid-template-columns: 40px minmax(0, 1fr) auto;
+		gap: 14px;
+		align-items: start;
+		padding: 12px 0;
+		border-top: 1px solid var(--line);
+	}
+	.earlier__text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--ink-2);
+	}
+	.earlier__text strong {
+		font-weight: 500;
+		color: var(--ink);
+	}
+	.earlier__dates {
+		font-size: 14px;
+		color: var(--muted);
+		white-space: nowrap;
+	}
+	.sidebar {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+		position: sticky;
+		top: 112px;
+	}
+	.side {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 20px;
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		background: var(--surface);
+		font-size: 15px;
+	}
+	.side h2 {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.side ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.side li {
+		padding: 9px 0;
+		border-top: 1px solid var(--line);
+	}
+	.side li a,
+	.side li > span,
+	.side__item {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		line-height: 1.45;
+	}
+	.side__item span:not(.muted) {
+		color: var(--ink-2);
+	}
+	.side strong {
+		font-weight: 500;
+	}
+	.side li a:hover strong {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.side__row.side__row {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	@media (max-width: 960px) {
+		.lower {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.sidebar {
+			position: static;
+		}
+		.ai {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.how {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+	@media (max-width: 720px) {
+		.masthead {
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 16px;
+			padding: 28px 0 24px;
+		}
+		.masthead h1 {
+			font-size: 38px;
+		}
+		.masthead__title {
+			font-size: 17px;
+		}
+		.masthead__para {
+			font-size: 16px;
+		}
+		.masthead__side :global(.masthead__portrait) {
+			display: none;
+		}
+		/* Phone: icon-only filled circle beside the name. */
+		.resume {
+			width: var(--control-h);
+			padding: 0;
+			justify-content: center;
+			color: light-dark(#f2d872, #141412);
+		}
+		.resume__label,
+		.resume__pdf {
+			display: none;
+		}
+		.block {
+			padding-bottom: 40px;
+		}
+		.metrics {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 20px;
+		}
+		.metric__value {
+			font-size: 34px;
+		}
+		.ai,
+		.panel {
+			padding: 20px;
+		}
+		.ai__grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		/* Featured work: a swipeable row. */
+		.featured {
+			grid-template-columns: none;
+			grid-auto-flow: column;
+			grid-auto-columns: 82%;
+			gap: 14px;
+			overflow-x: auto;
+			margin-inline: calc(-1 * var(--pad-x));
+			padding-inline: var(--pad-x);
+			scroll-snap-type: x mandatory;
+			scrollbar-width: none;
+		}
+		.fcard {
+			scroll-snap-align: center;
+		}
+		.group {
+			grid-template-columns: 32px minmax(0, 1fr);
+			gap: 12px;
+		}
+		.rail :global(.tile) {
+			width: 32px;
+			height: 32px;
+			padding: 4px;
+			border-radius: 8px;
+		}
+		.role summary {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.role__dates {
+			justify-content: space-between;
+		}
+		.artifacts {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.scale {
+			grid-template-columns: 96px minmax(0, 1fr);
+		}
+		.earlier li {
+			grid-template-columns: 40px minmax(0, 1fr);
+		}
+		.earlier__dates {
+			grid-column: 2;
+		}
+	}
+</style>

@@ -1,0 +1,325 @@
+---
+/**
+ * Home (PLAN §14.1): profile summary → Articles (featured + 3) → Career Highlights → footer.
+ * Articles arrive in Phase 3 and highlights in Phase 4; until then their sections show empty states.
+ */
+import Badge from '../components/Badge.astro';
+import Button from '../components/Button.astro';
+import Card from '../components/Card.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Highlight from '../components/Highlight.astro';
+import Meta from '../components/Meta.astro';
+import Portrait from '../components/Portrait.astro';
+import TextLink from '../components/TextLink.astro';
+import Base from '../layouts/Base.astro';
+import { articleUrl, formatDate, getArticles, primaryTag, readingTime } from '../lib/articles';
+import { getCareer, getProfile, yearRange } from '../lib/profile';
+import { url } from '../lib/url';
+
+const profile = await getProfile();
+
+// Tagline: "Engineering Leader, AI Change Agent, & a forever humanist."
+// The highlighted phrase stays whole; on phones the line breaks after the last comma before it.
+const hlAt = profile.tagline.indexOf(profile.tagline_highlight);
+const beforeHl = profile.tagline.slice(0, hlAt).trimEnd();
+const afterHl = profile.tagline.slice(hlAt + profile.tagline_highlight.length);
+const breakAt = beforeHl.lastIndexOf(',');
+const taglineA = breakAt >= 0 ? beforeHl.slice(0, breakAt + 1) : '';
+const taglineB = breakAt >= 0 ? beforeHl.slice(breakAt + 1).trim() : beforeHl;
+
+const articles = await getArticles();
+const [featured, ...rest] = articles;
+const more = rest.slice(0, 3);
+
+const { highlights, employerOf } = await getCareer();
+---
+
+<Base description={profile.home_intro}>
+	<div class="container">
+		<section class="hero" aria-labelledby="intro-name">
+			<p class="hero__title-line">{profile.title}, {profile.employer}</p>
+			<h1 class="hero__name" id="intro-name">{profile.name}</h1>
+			<p class="hero__tagline">
+				{taglineA && <>{taglineA}{' '}<br class="br-phone" /></>}
+				{taglineB}&nbsp;<Highlight>{profile.tagline_highlight}</Highlight>{afterHl}
+			</p>
+			<p class="hero__intro lede">{profile.home_intro}</p>
+			<div class="hero__ctas">
+				<Button variant="primary" href={url('/profile/')} class="cta">View profile</Button>
+				<Button variant="secondary" icon="linkedin" href={profile.links.linkedin} class="cta">LinkedIn</Button>
+			</div>
+			<div class="hero__portrait">
+				<Portrait size={240} phoneSize={88} />
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="articles-h">
+			<div class="section-head">
+				<h2 class="section-title" id="articles-h">Articles</h2>
+				<TextLink href={url('/articles/')}>All articles</TextLink>
+			</div>
+			{
+				featured ? (
+					<div class="articles">
+						<Card variant="surface" class="articles__featured">
+							<Eyebrow>
+								<Badge>Latest</Badge>
+								<span>{primaryTag(featured)}</span>
+							</Eyebrow>
+							<h3 class="featured__title">
+								<a href={articleUrl(featured)}>{featured.data.title}</a>
+							</h3>
+							<p class="featured__summary">{featured.data.description}</p>
+							<Meta items={[formatDate(featured.data.date), readingTime(featured)]} />
+						</Card>
+						<div class="articles__list">
+							{more.map((a) => (
+								<article class="row">
+									<Eyebrow>{primaryTag(a)}</Eyebrow>
+									<h3 class="row__title">
+										<a href={articleUrl(a)}>{a.data.title}</a>
+									</h3>
+									<Meta items={[formatDate(a.data.date), readingTime(a)]} />
+								</article>
+							))}
+						</div>
+					</div>
+				) : (
+					<p class="empty">No articles yet.</p>
+				)
+			}
+		</section>
+
+		<section class="section section--last" aria-labelledby="highlights-h">
+			<div class="section-head">
+				<h2 class="section-title" id="highlights-h">Career Highlights</h2>
+				<TextLink href={url('/profile/')}>Full profile</TextLink>
+			</div>
+			{
+				highlights.length > 0 ? (
+					<div class="highlights">
+						{highlights.map((r) => (
+							<div class="highlight">
+								<Meta size={13} items={[employerOf(r).name, yearRange(r.data.start, r.data.end)]} />
+								<h3 class="highlight__label">{r.data.highlight!.label}</h3>
+								<p class="highlight__line">{r.data.highlight!.line}</p>
+							</div>
+						))}
+					</div>
+				) : (
+					<p class="empty">Add a <code>highlight</code> block to a role to show it here.</p>
+				)
+			}
+		</section>
+	</div>
+</Base>
+
+<style>
+	/* Hero: text column + portrait (desktop); portrait beside the name (phone). */
+	.hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			'title    portrait'
+			'name     portrait'
+			'tagline  portrait'
+			'intro    portrait'
+			'ctas     portrait';
+		column-gap: 48px;
+		row-gap: 18px;
+		align-items: start;
+		padding-block: 48px 36px;
+	}
+	.hero__title-line {
+		grid-area: title;
+		font-size: var(--fs-title-line);
+		font-weight: 400;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--ink-2);
+	}
+	.hero__name {
+		grid-area: name;
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: var(--fs-display);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+	}
+	.hero__tagline {
+		grid-area: tagline;
+		font-family: var(--font-serif-stack);
+		font-style: italic;
+		font-size: var(--fs-tagline);
+		line-height: 1.35;
+		color: var(--ink);
+	}
+	.br-phone {
+		display: none;
+	}
+	.hero__intro {
+		grid-area: intro;
+	}
+	.hero__ctas {
+		grid-area: ctas;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		padding-top: 6px;
+	}
+	.hero__portrait {
+		grid-area: portrait;
+		align-self: center;
+		display: flex;
+		justify-content: center;
+		min-width: 220px;
+	}
+
+	@media (max-width: 720px) {
+		.hero {
+			grid-template-columns: auto minmax(0, 1fr);
+			grid-template-areas:
+				'portrait name'
+				'portrait title'
+				'tagline  tagline'
+				'intro    intro'
+				'ctas     ctas';
+			column-gap: 16px;
+			row-gap: 2px;
+			padding-block: 28px 32px;
+		}
+		.hero__portrait {
+			min-width: 0;
+			align-self: center;
+		}
+		.hero__name {
+			align-self: end;
+			font-size: 32px;
+			line-height: 1.05;
+			letter-spacing: -0.015em;
+		}
+		.hero__title-line {
+			font-size: 11px;
+			line-height: 1.5;
+			letter-spacing: 0.14em;
+		}
+		.hero__tagline {
+			margin-top: 14px;
+			line-height: 1.45;
+		}
+		.hero__tagline :global(.hl) {
+			white-space: nowrap;
+		}
+		.br-phone {
+			display: inline;
+		}
+		.hero__intro {
+			margin-top: 14px;
+			font-size: 16px;
+			line-height: 1.6;
+		}
+		.hero__ctas {
+			margin-top: 14px;
+			padding-top: 0;
+			flex-wrap: nowrap;
+			gap: 10px;
+		}
+		.hero__ctas :global(.cta) {
+			flex: 1 1 0;
+		}
+	}
+
+	/* Articles: featured card beside a list of three. */
+	.articles {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: stretch;
+		gap: var(--gap-col);
+	}
+	.articles :global(.articles__featured) {
+		flex: 1.15 1 440px;
+		min-width: 0;
+		justify-content: center;
+	}
+	.featured__title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: var(--fs-card-title);
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+	}
+	.featured__summary {
+		font-size: 16px;
+		line-height: 1.65;
+		color: var(--ink-2);
+	}
+	.articles__list {
+		flex: 1 1 360px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+	.row {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding-block: 16px;
+		border-top: 1px solid var(--line);
+	}
+	.row:first-child {
+		padding-top: 2px;
+		border-top: none;
+	}
+	.row__title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: var(--fs-list-title);
+		line-height: 1.25;
+	}
+	.featured__title a:hover,
+	.row__title a:hover {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+
+	/* Career Highlights: four entries, 1px section-line rule above each. */
+	.section--last {
+		padding-bottom: 48px;
+	}
+	.highlights {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 32px;
+	}
+	.highlight {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line-section);
+	}
+	.highlight__label {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: var(--fs-list-title);
+		line-height: 1.25;
+	}
+	.highlight__line {
+		font-size: var(--fs-summary);
+		line-height: 1.55;
+		color: var(--ink-2);
+	}
+	@media (max-width: 960px) {
+		.highlights {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (max-width: 560px) {
+		.highlights {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 20px;
+		}
+	}
+</style>

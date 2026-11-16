@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { url } from '../lib/url';
+
+interface Props {
+	title?: string;
+	description?: string;
+	noindex?: boolean;
+	image?: string;
+	type?: 'website' | 'article';
+}
+const { title, description = SITE_DESCRIPTION, noindex = false, image, type = 'website' } = Astro.props;
+const ogImage = new URL(image ?? url('/og-default.png'), Astro.site);
+const fullTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#FBFAF7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)" />
+
+<!-- Apply the saved theme before first paint (no flash). -->
+<script is:inline>
+	try {
+		const t = localStorage.getItem('theme');
+		if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+	} catch (e) {}
+</script>
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content="subash.org" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href={url('/favicon.ico')} sizes="32x32" />
+<link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+<link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
+
+<link rel="sitemap" href={url('/sitemap-index.xml')} />
+<link rel="alternate" type="application/rss+xml" title="Subash Canapathy · Articles" href={url('/rss.xml')} />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Self-hosted fonts. Preload only the upright faces used above the fold (Newsreader 500, Inter 400).
+     Google serves each family as one variable file per style, and Astro records one preload entry per
+     file (under its first weight), so filter by style rather than weight. -->
+<Font cssVariable="--font-serif" preload={[{ style: 'normal' }]} />
+<Font cssVariable="--font-sans" preload={[{ style: 'normal' }]} />

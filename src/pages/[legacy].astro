@@ -4,7 +4,7 @@
  * each article's `medium_url`, plus Medium's profile paths. Instant meta refresh + canonical,
  * which search engines treat as a permanent redirect. Never edited by hand.
  */
-import { articleUrl, getArticles } from '../lib/articles';
+import { articleUrl, getAllArticles } from '../lib/articles';
 import { url } from '../lib/url';
 
 export async function getStaticPaths() {
@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 		'@subashcanapathy': url('/'),
 	};
 	const paths = Object.entries(fixed).map(([legacy, to]) => ({ params: { legacy }, props: { to } }));
-	for (const article of await getArticles()) {
+	for (const article of await getAllArticles()) {
 		if (!article.data.medium_url) continue;
 		const legacy = new URL(article.data.medium_url).pathname.replace(/^\/+|\/+$/g, '');
 		if (!legacy || legacy.includes('/')) {

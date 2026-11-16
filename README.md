@@ -109,9 +109,11 @@ Every article is a folder. The folder name becomes the address:
 4. Write the article underneath it, in Markdown.
 5. Put the article's images in `src/content/articles/my-new-article/images/`.
 
-A complete example of every element (headings, lists, images, wide figures, quotes, tables, code) is in
-`src/content/articles/formatting-reference/index.md`. It is a draft, so it only shows in `npm run dev`, at
-<http://localhost:4321/articles/formatting-reference/>. Copy from it freely.
+**Formatting reference:** a complete example of every element (headings, lists, images, wide figures,
+quotes, tables, code) is published, unlisted, at
+**<https://subash-canapathy.github.io/articles/formatting-reference/>** (`subash.org/articles/formatting-reference/`
+once the domain moves; <http://localhost:4321/articles/formatting-reference/> in `npm run dev`). Its source is
+`src/content/articles/formatting-reference/index.md`. Copy from it freely.
 
 ### 3.2 The front matter
 
@@ -142,6 +144,7 @@ original:
 | `hero_alt` | with `hero` | A short description of the hero image for screen readers. Required when `hero` is set. |
 | `pinned` | no | `true` puts the article in the "Pinned" card at the top of the Articles page. Only one article can be pinned; the build stops if two are. |
 | `draft` | no | `true` keeps the article off the live site. It still shows in `npm run dev`, marked "Draft". New articles from the template start as drafts. Set `false` to publish. |
+| `unlisted` | no | `true` publishes the article at its address but leaves it out of everything else: Home, the Articles list, tag pages, "Keep reading", RSS and the sitemap, and tells search engines not to index it. Only people with the link find it. See 3.6. |
 | `medium_url` | no | The article's old address on subash.org from the Medium days. The build creates a page at that old address that sends readers (and Google) to the new one. |
 | `original` | no | Adds "Originally published in *publication*." under the title, linking to `url`. |
 | `updated` | no | A later date if you revised the article (`YYYY-MM-DD`). |
@@ -216,16 +219,31 @@ they are, at that address.
 2. Set `draft: false`.
 3. `git add -A && git commit -m "Publish: <title>" && git push`.
 
-Once it is live, the Home page, the Articles list, the tag pages, "Keep reading" on other articles, the RSS
+Once it is live (and not unlisted), the Home page, the Articles list, the tag pages, "Keep reading" on other articles, the RSS
 feed and the sitemap all update by themselves.
 
 ### 3.5 Change or remove an article
+
+The six articles that used to live on Medium were moved here on 2026-11-15 with their Medium publish dates,
+text, images and captions. Each has a `medium_url`, so its old subash.org address keeps working. Edit them
+like any other article.
+
 
 - **Fix a typo or edit:** edit `index.md`, commit, push.
 - **Unpublish:** set `draft: true`, commit, push. (Deleting the folder also works, but any links to it break.)
 - **Pin a different article:** set `pinned: false` on the current one and `pinned: true` on the new one.
 
-### 3.6 Keeping unfinished writing private
+### 3.6 Hidden (unlisted) articles
+
+For a page you want to share by link only (a reference, a page for one audience), set `unlisted: true`
+and `draft: false`. The article goes live at `/articles/<folder-name>/`, but no list, feed, tag page or
+search engine shows it. Its tags are shown as plain text, not links. Set `unlisted: false` later to list it
+normally.
+
+The formatting reference is published this way:
+<https://subash-canapathy.github.io/articles/formatting-reference/>.
+
+### 3.7 Keeping unfinished writing private
 
 This repository is public, so anything you commit (even with `draft: true`) can be read on GitHub. For
 writing you are not ready to show anyone, use the `drafts/` folder at the top of the repository. Git ignores

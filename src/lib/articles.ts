@@ -9,16 +9,21 @@ export const PAGE_SIZE = 10;
 export const TOP_TAGS = 4;
 
 /**
- * Published articles, newest first. Drafts (`draft: true`) are shown while previewing with
- * `npm run dev` and are never built into the live site.
+ * Every article that gets a page, newest first: published and unlisted ones. Drafts
+ * (`draft: true`) are included only while previewing with `npm run dev`.
  */
-export async function getArticles(): Promise<Article[]> {
+export async function getAllArticles(): Promise<Article[]> {
 	const all = await getCollection('articles', ({ data }) => import.meta.env.DEV || !data.draft);
 	const pinned = all.filter((a) => a.data.pinned);
 	if (pinned.length > 1) {
 		throw new Error(`Only one article can be pinned at a time. Pinned now: ${pinned.map((a) => a.id).join(', ')}. Set "pinned: false" on all but one.`);
 	}
 	return all.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+}
+
+/** Articles for lists, feeds and tag pages: everything except unlisted ones. */
+export async function getArticles(): Promise<Article[]> {
+	return (await getAllArticles()).filter((a) => !a.data.unlisted);
 }
 
 export const articleUrl = (a: Article) => url(`/articles/${a.id}/`);

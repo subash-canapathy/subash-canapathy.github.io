@@ -1,17 +1,18 @@
 ---
 title: "Formatting reference: everything an article can contain"
-description: "A draft that shows every element an article supports. Copy from it when writing; it is never published."
+description: "Every element an article supports, for reference while writing. Unlisted: reachable only by its address."
 date: 2026-11-15
 tags: [Writing guide, Formatting]
 hero: ./images/hero.png
 hero_alt: "Four boxes in a row: write, commit, push, live"
 pinned: false
-draft: true # drafts show in `npm run dev` only and are never built into the live site
+draft: false
+unlisted: true # published at /articles/formatting-reference/ but listed nowhere
 ---
 
-This draft exists so you can see how each piece of Markdown looks on the site. Open it at
-`/articles/formatting-reference/` while `npm run dev` is running, and copy whatever you need from
-`src/content/articles/formatting-reference/index.md`.
+This page shows how each piece of Markdown looks on the site. It is unlisted: it lives at
+`/articles/formatting-reference/` but appears in no list, feed or search engine. Copy whatever you need
+from `src/content/articles/formatting-reference/index.md`.
 
 The first paragraphs of an article need no special treatment. Write plain paragraphs separated by a
 blank line. Use **bold** for the few words that matter, *italics* for titles and emphasis, and

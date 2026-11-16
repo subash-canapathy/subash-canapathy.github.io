@@ -1,4 +1,6 @@
 // @ts-check
+import fs from 'node:fs';
+import path from 'node:path';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 
@@ -8,7 +10,18 @@ const site = process.env.SITE_URL ?? 'https://subash-canapathy.github.io';
 // Only real pages go in the sitemap: not the style guide, the print page or the old-URL redirect pages.
 const listed = (pathname) =>
 	pathname === '/' || /^\/(articles|profile|photography)\//.test(pathname);
-const unlisted = ['/profile/print/'];
+// Articles marked `unlisted: true` stay out of the sitemap too.
+const unlisted = [
+	'/profile/print/',
+	...fs
+		.readdirSync('src/content/articles', { withFileTypes: true })
+		.filter((d) => d.isDirectory() && !d.name.startsWith('_'))
+		.filter((d) => {
+			const file = path.join('src/content/articles', d.name, 'index.md');
+			return fs.existsSync(file) && /^unlisted:\s*true\b/m.test(fs.readFileSync(file, 'utf8').split(/^---$/m)[1] ?? '');
+		})
+		.map((d) => `/articles/${d.name}/`),
+];
 
 export default defineConfig({
 	site,

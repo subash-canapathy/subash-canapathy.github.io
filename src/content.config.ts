@@ -24,6 +24,8 @@ const articles = defineCollection({
 				hero_alt: z.string().optional(),
 				pinned: z.boolean().default(false),
 				draft: z.boolean().default(false),
+				// Published at its address but left out of every list, feed, sitemap and search engine.
+				unlisted: z.boolean().default(false),
 				// Old Medium URL: the build generates a redirect page at its path.
 				medium_url: z.url().optional(),
 				original: z.object({ publication: z.string().min(1), url: z.url() }).optional(),

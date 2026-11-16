@@ -9,13 +9,13 @@ import BackLink from '../../components/BackLink.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import Portrait from '../../components/Portrait.astro';
 import Base from '../../layouts/Base.astro';
-import { type Article, articleUrl, cardImage, formatDate, getArticles, primaryTag, readingTime, related, tagUrl } from '../../lib/articles';
+import { type Article, articleUrl, cardImage, formatDate, getAllArticles, getArticles, primaryTag, readingTime, related, tagUrl } from '../../lib/articles';
 import { getProfile } from '../../lib/profile';
 import { url } from '../../lib/url';
 import '../../styles/prose.css';
 
 export async function getStaticPaths() {
-	const all = await getArticles();
+	const all = await getAllArticles();
 	return all.map((article) => ({ params: { slug: article.id }, props: { article } }));
 }
 const { article } = Astro.props as { article: Article };
@@ -37,7 +37,7 @@ const thumbs = await Promise.all(
 );
 ---
 
-<Base title={title} description={description} image={og} type="article">
+<Base title={title} description={description} image={og} type="article" noindex={article.data.unlisted}>
 	<div class="container article">
 		{draft && <p class="draft-note">Draft: visible in local preview only. Set <code>draft: false</code> to publish.</p>}
 		<header class="head">
@@ -110,7 +110,7 @@ const thumbs = await Promise.all(
 			{tags.map((t, i) => (
 				<>
 					{i > 0 && ' · '}
-					<a href={tagUrl(t)}>{t}</a>
+					{article.data.unlisted ? t : <a href={tagUrl(t)}>{t}</a>}
 				</>
 			))}
 		</p>

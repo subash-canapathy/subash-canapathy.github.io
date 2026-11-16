@@ -7,7 +7,7 @@ import path from 'node:path';
 import type { ImageMetadata } from 'astro';
 import { getCollection } from 'astro:content';
 import { exifDate, readExif } from '../../scripts/lib/exif.mjs';
-import { type FrameInfo, frameInfo } from './camera';
+import { type Exif, type FrameInfo, frameInfo } from './camera';
 
 export interface Photo {
 	/** Path under src/content/photos/, e.g. "2026/10/gastown-rain.jpg" */
@@ -42,7 +42,7 @@ export function getPhotos(): Photo[] {
 		const id = key.replace('../content/photos/', '');
 		const file = path.join(PHOTOS_DIR, id);
 		const buf = fs.readFileSync(file);
-		const exif = /\.jpe?g$/i.test(id) ? readExif(buf) : {};
+		const exif: Exif & { hasGps?: boolean; dateTimeOriginal?: string } = /\.jpe?g$/i.test(id) ? readExif(buf) : {};
 		const src = mod.default;
 		if (exif.hasGps) problems.push(`${id}: contains GPS location. This repo is public; run "npm run photos:strip-gps".`);
 		if (Math.max(src.width, src.height) > MAX_EDGE || buf.length > MAX_BYTES) {

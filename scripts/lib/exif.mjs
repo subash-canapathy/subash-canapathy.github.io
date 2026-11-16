@@ -46,7 +46,7 @@ function reader(buf, tiff) {
 }
 
 /** Walk one IFD; calls fn(tag, type, count, valueOffset, entryOffset). Offsets are relative to the TIFF header. */
-function walkIfd(buf, tiff, r, ifdOffset, limit, fn) {
+function walkIfd(r, ifdOffset, limit, fn) {
 	if (!ifdOffset || ifdOffset + 2 > limit) return;
 	const n = r.u16(ifdOffset);
 	for (let i = 0; i < n; i++) {
@@ -97,12 +97,12 @@ export function readExif(buf) {
 	const r = reader(buf, tiff);
 	let exifIfd = 0;
 	let gpsIfd = 0;
-	walkIfd(buf, tiff, r, r.u32(4), limit, (tag, type, count, o) => {
+	walkIfd(r, r.u32(4), limit, (tag, type, count, o) => {
 		if (tag === 0x8769) exifIfd = r.u32(o);
 		else if (tag === 0x8825) gpsIfd = r.u32(o);
 		else if (TAGS_IFD0[tag]) result[TAGS_IFD0[tag]] = readValue(buf, tiff, r, type, count, o);
 	});
-	walkIfd(buf, tiff, r, exifIfd, limit, (tag, type, count, o) => {
+	walkIfd(r, exifIfd, limit, (tag, type, count, o) => {
 		if (TAGS_EXIF[tag]) result[TAGS_EXIF[tag]] = readValue(buf, tiff, r, type, count, o);
 	});
 	if (gpsIfd && gpsIfd + 2 <= limit && r.u16(gpsIfd) > 0) result.hasGps = true;
@@ -130,12 +130,12 @@ export function stripGps(buf) {
 		const limit = Math.min(seg.tiffLength, buf.length - tiff);
 		const r = reader(buf, tiff);
 		let gpsIfd = 0;
-		walkIfd(buf, tiff, r, r.u32(4), limit, (tag, _t, _c, o) => {
+		walkIfd(r, r.u32(4), limit, (tag, _t, _c, o) => {
 			if (tag === 0x8825) gpsIfd = r.u32(o);
 		});
 		if (gpsIfd && gpsIfd + 2 <= limit) {
 			const n = r.u16(gpsIfd);
-			walkIfd(buf, tiff, r, gpsIfd, limit, (_tag, type, count, o) => {
+			walkIfd(r, gpsIfd, limit, (_tag, type, count, o) => {
 				const size = (TYPE_SIZE[type] ?? 1) * count;
 				if (size > 4) buf.fill(0, tiff + o, tiff + o + size);
 			});

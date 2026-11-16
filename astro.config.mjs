@@ -8,6 +8,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 const site = process.env.SITE_URL ?? 'https://subash-canapathy.github.io';
 
 // Only real pages go in the sitemap: not the style guide, the print page or the old-URL redirect pages.
+/** @param {string} pathname */
 const listed = (pathname) =>
 	pathname === '/' || /^\/(articles|profile|photography)\//.test(pathname);
 // Articles marked `unlisted: true` stay out of the sitemap too.

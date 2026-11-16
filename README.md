@@ -1,11 +1,12 @@
 # subash.org
 
-The personal site of Subash Canapathy: **articles**, a **profile** with a downloadable resume, and **photography**.
+Subash Cananapathy's personal website hosting his: **articles**, career **profile** with a downloadable resume, and his **photography** showcase.
 
-It is a static site built with [Astro](https://astro.build). There is no CMS, server or database.
-Everything on the site comes from plain files in this repository:
+## Instructions for site updates
 
-| You want to… | You edit… |
+**Note:**: Following instructions are for the author updating the website content. Please dont create pull-requests, they will be rejected and ignored.
+
+| Action | Where to edit… |
 |---|---|
 | Publish or change an article | `src/content/articles/<article>/index.md` (+ its `images/` folder) |
 | Add photos or change albums | `src/content/photos/` and `src/content/photos/albums.yaml` |

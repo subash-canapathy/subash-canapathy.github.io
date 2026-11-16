@@ -1,0 +1,23 @@
+---
+/** "← All articles" / "← Photography": Inter 14 muted, above the eyebrow. */
+interface Props {
+	href: string;
+}
+const { href } = Astro.props;
+---
+
+<a class="back" href={href}>← <slot /></a>
+
+<style>
+	.back {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		min-height: 32px;
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.back:hover {
+		color: var(--ink);
+	}
+</style>

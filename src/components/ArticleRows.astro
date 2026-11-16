@@ -1,0 +1,125 @@
+---
+/** Article list rows: date + reading time | title, one-line summary, tags as plain grey text. */
+import { type Article, articleUrl, formatDate, readingTime } from '../lib/articles';
+
+interface Props {
+	articles: Article[];
+	heading?: string;
+}
+const { articles, heading = 'Newest first' } = Astro.props;
+---
+
+<section class="rows" aria-label={heading}>
+	<h2 class="rows__head">{heading}</h2>
+	{
+		articles.map((a) => (
+			<article class="row">
+				<p class="row__meta">
+					<span>{formatDate(a.data.date)}</span>
+					<span>{readingTime(a)}</span>
+				</p>
+				<div class="row__body">
+					<h3 class="row__title">
+						<a href={articleUrl(a)}>{a.data.title}</a>
+						{a.data.draft && <span class="row__draft">Draft</span>}
+					</h3>
+					<p class="row__summary">{a.data.description}</p>
+					<p class="row__tags">{a.data.tags.join(' · ')}</p>
+				</div>
+			</article>
+		))
+	}
+	{articles.length === 0 && <p class="rows__empty">No articles here yet.</p>}
+</section>
+
+<style>
+	.rows {
+		padding-top: 28px;
+	}
+	.rows__head {
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--line-section);
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 140px minmax(0, 1fr);
+		gap: 24px;
+		padding: 22px 0;
+		border-bottom: 1px solid var(--line);
+	}
+	.row:last-of-type {
+		border-bottom: none;
+	}
+	.row__meta {
+		margin-top: 4px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.row__body {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.row__title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 24px;
+		line-height: 1.25;
+	}
+	.row__title a:hover {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+	.row__draft {
+		margin-left: 10px;
+		padding: 2px 8px;
+		border: 1px dashed var(--line-control);
+		border-radius: var(--radius-pill);
+		font-family: var(--font-sans-stack);
+		font-size: 12px;
+		color: var(--muted);
+		vertical-align: middle;
+	}
+	.row__summary {
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--ink-2);
+	}
+	.row__tags {
+		font-size: 13px;
+		color: var(--muted);
+	}
+	.rows__empty {
+		padding: 22px 0;
+		color: var(--muted);
+	}
+	@media (max-width: 720px) {
+		.row {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 6px;
+			padding: 18px 0;
+		}
+		.row__meta {
+			margin: 0;
+			flex-direction: row;
+			gap: 0;
+			font-size: 13px;
+		}
+		.row__meta span + span::before {
+			content: ' · ';
+			white-space: pre;
+		}
+		.row__title {
+			font-size: 21px;
+		}
+	}
+</style>

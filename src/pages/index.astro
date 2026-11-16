@@ -3,7 +3,6 @@
  * Home (PLAN §14.1): profile summary → Articles (featured + 3) → Career Highlights → footer.
  * Articles arrive in Phase 3 and highlights in Phase 4; until then their sections show empty states.
  */
-import { getCollection } from 'astro:content';
 import Badge from '../components/Badge.astro';
 import Button from '../components/Button.astro';
 import Card from '../components/Card.astro';
@@ -14,7 +13,7 @@ import Portrait from '../components/Portrait.astro';
 import TextLink from '../components/TextLink.astro';
 import Base from '../layouts/Base.astro';
 import { articleUrl, formatDate, getArticles, primaryTag, readingTime } from '../lib/articles';
-import { getProfile } from '../lib/profile';
+import { getCareer, getProfile, yearRange } from '../lib/profile';
 import { url } from '../lib/url';
 
 const profile = await getProfile();
@@ -32,18 +31,7 @@ const articles = await getArticles();
 const [featured, ...rest] = articles;
 const more = rest.slice(0, 3);
 
-const roles = await getCollection('roles');
-const companies = await getCollection('companies');
-const companyName = (id: string) => companies.find((c) => c.id === id)?.data.name ?? id;
-const yearsOf = (start: string, end: string | null) => {
-	const s = start.slice(0, 4);
-	if (!end) return `${s}–now`;
-	const e = end.slice(0, 4);
-	return s === e ? s : `${s}–${e.slice(2)}`;
-};
-const highlights = roles
-	.filter((r) => r.data.highlight)
-	.sort((a, b) => a.data.highlight!.order - b.data.highlight!.order);
+const { highlights, employerOf } = await getCareer();
 ---
 
 <Base description={profile.home_intro}>
@@ -97,7 +85,7 @@ const highlights = roles
 						</div>
 					</div>
 				) : (
-					<p class="empty">The articles move here from Medium in Phase 3.</p>
+					<p class="empty">No articles yet.</p>
 				)
 			}
 		</section>
@@ -112,14 +100,14 @@ const highlights = roles
 					<div class="highlights">
 						{highlights.map((r) => (
 							<div class="highlight">
-								<Meta size={13} items={[companyName(r.data.company), yearsOf(r.data.start, r.data.end)]} />
+								<Meta size={13} items={[employerOf(r).name, yearRange(r.data.start, r.data.end)]} />
 								<h3 class="highlight__label">{r.data.highlight!.label}</h3>
 								<p class="highlight__line">{r.data.highlight!.line}</p>
 							</div>
 						))}
 					</div>
 				) : (
-					<p class="empty">Four highlights from the Profile content arrive in Phase 4.</p>
+					<p class="empty">Add a <code>highlight</code> block to a role to show it here.</p>
 				)
 			}
 		</section>

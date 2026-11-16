@@ -1,0 +1,32 @@
+# Albums on the Photography page, in the order they appear.
+#
+# Every photo under src/content/photos/ shows in the camera roll automatically.
+# To put a photo in an album, add its path (relative to this folder) under that album's `photos:`.
+# A photo can be listed in several albums; it is still stored once.
+#
+#   cover:   optional; the album's newest photo is used when it is left out
+#   layout:  optional; "square" gives an even grid of square crops instead of the masonry
+#
+# Example:
+#   vancouver:
+#     title: Vancouver
+#     cover: ./2026/10/gastown-rain.jpg
+#     photos:
+#       - ./2026/10/gastown-rain.jpg
+#       - ./2025/12/seawall-fog.jpg
+
+vancouver:
+  title: Vancouver
+  photos: []
+
+travel:
+  title: Travel
+  photos: []
+
+off-roading:
+  title: Off-Roading
+  photos: []
+
+monochrome:
+  title: Monochrome
+  photos: []

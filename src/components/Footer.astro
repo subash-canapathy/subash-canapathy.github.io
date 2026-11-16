@@ -2,10 +2,12 @@
 /** Shared footer: identical on every page (PLAN §14.1 item 5, DESIGN.md › Components). */
 import { getProfile } from '../lib/profile';
 import { url } from '../lib/url';
+import { getPhotos } from '../lib/photos';
 import Button from './Button.astro';
 
 const profile = await getProfile();
 const year = new Date().getFullYear();
+const hasPhotos = getPhotos().length > 0;
 ---
 
 <footer class="site-footer" id="contact">
@@ -15,7 +17,7 @@ const year = new Date().getFullYear();
 			<Button variant="accent" href={profile.links.linkedin}>Get in touch</Button>
 		</div>
 		<ul class="footer__links">
-			<li><a href={url('/photography/')}>Photography</a></li>
+			{hasPhotos && <li><a href={url('/photography/')}>Photography</a></li>}
 			<li><a href={url('/rss.xml')}>RSS</a></li>
 			<li><a href={profile.links.linkedin}>LinkedIn</a></li>
 			<li><a href={profile.links.github}>GitHub</a></li>

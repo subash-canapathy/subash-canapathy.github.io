@@ -3,7 +3,7 @@
 id: example-role # stable key used by impact / featured / highlight references
 title: "Role title"
 company: microsoft # id from companies.yaml
-start: 2024-01 # YYYY-MM
+start: "2024-01" # YYYY-MM, in quotes
 end: null # null = current role
 location: "City"
 scope: "What the role covered, one line"
@@ -12,7 +12,7 @@ scale:
   Team: "…"
   Regions: "…"
 open: false # expanded by default on desktop
-# featured: { order: 1, title: "…", artifact: 0 }      # one of the three Featured work cards
+# featured: { order: 1, title: "…", line: "…" }        # one of the three Featured work cards
 # highlight: { order: 1, label: "…", line: "…" }        # one of the four Home Career Highlights
 resume:
   include: true

@@ -1,23 +1,32 @@
 ---
 /**
- * Sticky primary nav (PLAN §4, DESIGN.md › Nav).
- * - Links in ink; current page = weight 500 + 3px rounded yellow bar.
- * - Hover = the same bar element in the section-line colour, fading in, so nothing moves.
- *   The current page's bar stays yellow on hover.
- * - Theme toggle on every page.
- * - Phones (≤720px): mark + menu button. The open-menu state is not designed yet (DESIGN.md › Open);
- *   this is a plain stacked list until it is.
+ * Sticky primary nav (DESIGN.md › Nav, New pages › Phone menu).
+ * - Links in ink; current page = weight 500 + 3px rounded yellow bar; hover = the same bar
+ *   element in the section-line colour, so nothing moves.
+ * - Phones (≤720px): mark + menu button. The menu is a full-screen sheet: four serif rows,
+ *   an Appearance switch (Light / Dark), then LinkedIn · GitHub · RSS and the © line.
+ * - Photography is left out of the nav until there is at least one photo.
  */
 import { NAV } from '../consts';
+import { getPhotos } from '../lib/photos';
+import { getProfile } from '../lib/profile';
 import { isCurrent, url } from '../lib/url';
 import NavMark from './NavMark.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
+interface Props {
+	/** Set on pages that are no section's page (404), so no item is marked current. */
+	noCurrent?: boolean;
+}
+const { noCurrent = false } = Astro.props;
 const pathname = Astro.url.pathname;
-const items = NAV.map((item) => {
+const profile = await getProfile();
+const hasPhotos = getPhotos().length > 0;
+const items = NAV.filter((item) => hasPhotos || item.href !== '/photography/').map((item) => {
 	const href = url(item.href);
-	return { ...item, href, current: isCurrent(href, pathname) };
+	return { ...item, href, current: !noCurrent && isCurrent(href, pathname) };
 });
+const year = new Date().getFullYear();
 ---
 
 <header class="site-header" data-site-header>
@@ -29,11 +38,7 @@ const items = NAV.map((item) => {
 		<div class="nav__links">
 			{
 				items.map((item) => (
-					<a
-						class:list={['nav__link', { 'is-current': item.current }]}
-						href={item.href}
-						aria-current={item.current ? 'page' : undefined}
-					>
+					<a class:list={['nav__link', { 'is-current': item.current }]} href={item.href} aria-current={item.current ? 'page' : undefined}>
 						{item.label}
 						<span class="nav__bar" aria-hidden="true" />
 					</a>
@@ -42,45 +47,52 @@ const items = NAV.map((item) => {
 			<ThemeToggle />
 		</div>
 
-		<div class="nav__phone">
-			<ThemeToggle />
-			<button
-				type="button"
-				class="nav__menu-btn"
-				aria-expanded="false"
-				aria-controls="phone-menu"
-				data-menu-button
-			>
-				<span class="visually-hidden">Menu</span>
-				<svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
-				<svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-			</button>
-		</div>
+		<button type="button" class="nav__menu-btn" aria-expanded="false" aria-controls="phone-menu" aria-label="Open menu" data-menu-button>
+			<svg class="icon-open" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+			<svg class="icon-close" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+		</button>
 	</nav>
 
-	<div class="phone-menu container" id="phone-menu" hidden data-menu>
-		<ul>
+	<div class="menu" id="phone-menu" hidden data-menu>
+		<ul class="menu__links">
 			{
 				items.map((item) => (
 					<li>
-						<a
-							class:list={['phone-menu__link', { 'is-current': item.current }]}
-							href={item.href}
-							aria-current={item.current ? 'page' : undefined}
-						>
-							{item.label}
+						<a class:list={['menu__link', { 'is-current': item.current }]} href={item.href} aria-current={item.current ? 'page' : undefined}>
+							<span class="menu__label">
+								{item.label}
+								{item.current && <span class="menu__bar" aria-hidden="true" />}
+							</span>
+							<span class="menu__arrow" aria-hidden="true">→</span>
 						</a>
 					</li>
 				))
 			}
 		</ul>
+		<div class="menu__appearance">
+			<p class="menu__eyebrow" id="appearance-label">Appearance</p>
+			<div class="menu__pills" role="group" aria-labelledby="appearance-label">
+				<button type="button" class="menu__pill" data-theme-set="light" aria-pressed="false">Light</button>
+				<button type="button" class="menu__pill" data-theme-set="dark" aria-pressed="false">Dark</button>
+			</div>
+		</div>
+		<div class="menu__foot">
+			<p class="menu__social">
+				<a href={profile.links.linkedin}>LinkedIn</a>
+				<span aria-hidden="true">·</span>
+				<a href={profile.links.github}>GitHub</a>
+				<span aria-hidden="true">·</span>
+				<a href={url('/rss.xml')}>RSS</a>
+			</p>
+			<p class="menu__copy">© {year} {profile.name}</p>
+		</div>
 	</div>
 </header>
 
 <script>
-	// Soft shadow once the page scrolls; phone menu open/close.
 	const header = document.querySelector<HTMLElement>('[data-site-header]');
 	if (header) {
+		// Soft shadow once the page scrolls.
 		const onScroll = () => header.toggleAttribute('data-scrolled', window.scrollY > 0);
 		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
@@ -90,7 +102,9 @@ const items = NAV.map((item) => {
 		if (button && menu) {
 			const setOpen = (open: boolean) => {
 				button.setAttribute('aria-expanded', String(open));
+				button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
 				menu.hidden = !open;
+				document.documentElement.classList.toggle('menu-open', open);
 			};
 			button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
 			document.addEventListener('keydown', (e) => {
@@ -117,6 +131,9 @@ const items = NAV.map((item) => {
 	.site-header[data-scrolled] {
 		box-shadow: var(--nav-shadow);
 	}
+	:global(html.menu-open) {
+		overflow: hidden;
+	}
 
 	.nav {
 		display: flex;
@@ -126,20 +143,17 @@ const items = NAV.map((item) => {
 		gap: 16px;
 		padding-block: 22px;
 	}
-
 	.nav__home {
 		display: inline-flex;
 		align-items: center;
 		min-height: var(--control-h);
 	}
-
 	.nav__links {
 		display: flex;
 		align-items: center;
 		gap: 28px;
 		font-size: 15px;
 	}
-
 	.nav__link {
 		position: relative;
 		color: var(--ink);
@@ -149,7 +163,6 @@ const items = NAV.map((item) => {
 	.nav__link.is-current {
 		font-weight: 500;
 	}
-
 	/* One bar element for both states: same height, same position. */
 	.nav__bar {
 		position: absolute;
@@ -171,16 +184,11 @@ const items = NAV.map((item) => {
 		opacity: 1;
 	}
 
-	.nav__phone {
-		display: none;
-		align-items: center;
-		gap: 4px;
-	}
-
 	.nav__menu-btn {
+		display: none;
 		width: var(--control-h);
 		height: var(--control-h);
-		display: flex;
+		margin-right: -10px;
 		align-items: center;
 		justify-content: center;
 		background: transparent;
@@ -196,21 +204,110 @@ const items = NAV.map((item) => {
 		display: block;
 	}
 
-	.phone-menu ul {
+	/* Phone menu: a full-screen sheet under the header. */
+	.menu {
+		position: fixed;
+		inset: 68px 0 0;
+		z-index: 9;
+		display: flex;
+		flex-direction: column;
+		padding: 8px var(--pad-x) 28px;
+		background: var(--bg);
+		overflow-y: auto;
+	}
+	.menu[hidden] {
+		display: none;
+	}
+	.menu__links {
 		list-style: none;
 		margin: 0;
-		padding: 0 0 12px;
+		padding: 0;
 	}
-	.phone-menu__link {
+	.menu__link {
 		display: flex;
 		align-items: center;
-		min-height: 48px;
-		border-top: 1px solid var(--line);
-		font-size: 17px;
+		justify-content: space-between;
+		min-height: 68px;
+		border-bottom: 1px solid var(--line);
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 30px;
+		line-height: 1.1;
 		color: var(--ink);
 	}
-	.phone-menu__link.is-current {
+	.menu__label {
+		position: relative;
+		padding-bottom: 6px;
+	}
+	.menu__bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: var(--bar);
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+	}
+	.menu__arrow {
+		font-family: var(--font-sans-stack);
+		font-size: 20px;
+		font-weight: 400;
+		color: var(--muted);
+	}
+	.menu__appearance {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding-top: 28px;
+	}
+	.menu__eyebrow {
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.menu__pills {
+		display: flex;
+		gap: 8px;
+	}
+	.menu__pill {
+		min-height: 40px;
+		padding: 0 18px;
+		border: 1px solid var(--line-control);
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: var(--ink);
+		font-size: 14px;
+		cursor: pointer;
+	}
+	.menu__pill[aria-pressed='true'] {
+		background: var(--btn-bg);
+		border-color: var(--btn-bg);
+		color: var(--btn-fg);
 		font-weight: 500;
+	}
+	.menu__foot {
+		margin-top: auto;
+		padding-top: 32px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.menu__social {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 15px;
+		color: var(--muted);
+	}
+	.menu__social a {
+		color: var(--ink-2);
+		padding-block: 8px;
+	}
+	.menu__copy {
+		font-size: 13px;
+		color: var(--muted);
 	}
 
 	@media (max-width: 720px) {
@@ -220,12 +317,12 @@ const items = NAV.map((item) => {
 		.nav__links {
 			display: none;
 		}
-		.nav__phone {
+		.nav__menu-btn {
 			display: flex;
 		}
 	}
 	@media (min-width: 721px) {
-		.phone-menu {
+		.menu {
 			display: none;
 		}
 	}

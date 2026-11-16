@@ -69,6 +69,15 @@
 	--code-comment: light-dark(#6e6b64, #8f8c84);
 	--code-mark: light-dark(#7a5c0e, #e6c65a);
 
+	/* Photo viewer (DESIGN.md › Photo viewer). The paper frame is the same in both themes. */
+	--viewer-bg: light-dark(#e4e0d7, #0b0b0a);
+	--viewer-muted: light-dark(#4f4d48, #a19e96);
+	--viewer-ctl: light-dark(#1a1917, #edebe6);
+	--viewer-ctl-bg: light-dark(rgba(251, 250, 247, 0.85), rgba(30, 29, 26, 0.85));
+	--viewer-ctl-line: light-dark(#c9c4b8, #4a4741);
+	--frame-paper: #fbfaf7;
+	--frame-ink: #1a1917;
+
 	/* Nav bar shadow (once the page scrolls) */
 	--nav-shadow: 0 1px 0 rgba(26, 25, 23, 0.06), 0 8px 18px -12px rgba(26, 25, 23, 0.28);
 

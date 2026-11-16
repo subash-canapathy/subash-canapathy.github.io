@@ -8,8 +8,11 @@ interface Props {
 	title?: string;
 	description?: string;
 	noindex?: boolean;
+	image?: string;
+	type?: 'website' | 'article';
 }
-const { title, description = SITE_DESCRIPTION, noindex = false } = Astro.props;
+const { title, description = SITE_DESCRIPTION, noindex = false, image, type = 'website' } = Astro.props;
+const ogImage = new URL(image ?? url('/og-default.png'), Astro.site);
 const fullTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -33,11 +36,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex" />}
 
-<meta property="og:type" content="website" />
+<meta property="og:type" content={type} />
 <meta property="og:site_name" content="subash.org" />
 <meta property="og:url" content={canonical} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href={url('/favicon.ico')} sizes="32x32" />
+<link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+<link rel="apple-touch-icon" href={url('/apple-touch-icon.png')} />
 
 <link rel="sitemap" href={url('/sitemap-index.xml')} />
 <link rel="alternate" type="application/rss+xml" title="Subash Canapathy · Articles" href={url('/rss.xml')} />

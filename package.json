@@ -9,9 +9,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/make-resume-pdf.mjs",
     "preview": "astro preview",
     "check": "astro check",
+    "photos:add": "node scripts/add-photos.mjs",
+    "photos:strip-gps": "node scripts/strip-gps.mjs",
     "astro": "astro"
   },
   "dependencies": {

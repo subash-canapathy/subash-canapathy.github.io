@@ -1,0 +1,174 @@
+---
+/**
+ * The Articles index, used for page 1 (/articles/) and later pages (/articles/page/<n>/).
+ * Page 1 shows the pinned article as a card; the list below is every other article, newest first.
+ */
+import { PAGE_SIZE, articleUrl, formatDate, getArticles, primaryTag, readingTime, tagCounts } from '../lib/articles';
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+import ArticleRows from './ArticleRows.astro';
+import Button from './Button.astro';
+import Pagination from './Pagination.astro';
+import TagPills from './TagPills.astro';
+
+interface Props {
+	page: number;
+}
+const { page } = Astro.props;
+const intro = 'Essays on engineering leadership, AI transformation and agentic product development.';
+
+const all = await getArticles();
+const pinned = all.find((a) => a.data.pinned);
+const rest = all.filter((a) => a !== pinned);
+const pages = Math.max(1, Math.ceil(rest.length / PAGE_SIZE));
+const rows = rest.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+---
+
+<Base title={page > 1 ? `Articles, page ${page}` : 'Articles'} description={intro}>
+	<div class="container page">
+		<header class="head">
+			<h1 class="page-title">Articles</h1>
+			{page === 1 ? <p class="lede">{intro}</p> : <p class="count">Page {page} of {pages}</p>}
+			{all.length > 0 && <TagPills tags={tagCounts(all)} total={all.length} />}
+		</header>
+
+		{
+			all.length === 0 && (
+				<p class="empty">
+					No articles yet. Add one by copying <code>src/content/articles/_template/</code> (see the README).
+				</p>
+			)
+		}
+
+		{
+			page === 1 && pinned && (
+				<section class="pinned" aria-label="Pinned article">
+					<p class="pinned__eyebrow">
+						<span class="pinned__badge">
+							<svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 4 4H6l4-4z" /><path d="M12 14v6" /></svg>
+							Pinned
+						</span>
+						<span>{primaryTag(pinned)}</span>
+					</p>
+					<h2 class="pinned__title">
+						<a href={articleUrl(pinned)}>{pinned.data.title}</a>
+					</h2>
+					<p class="pinned__summary">{pinned.data.description}</p>
+					<p class="pinned__meta">
+						{formatDate(pinned.data.date)} · {readingTime(pinned)}
+					</p>
+				</section>
+			)
+		}
+
+		{rest.length > 0 && <ArticleRows articles={rows} />}
+		<Pagination page={page} pages={pages} />
+
+		{
+			all.length > 0 && (
+				<section class="rss">
+					<p>New articles by RSS. Also cross-posted to Medium.</p>
+					<Button variant="secondary" href={url('/rss.xml')}>RSS feed</Button>
+				</section>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-bottom: 64px;
+	}
+	.head {
+		padding: 48px 0 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.head .lede {
+		max-width: 640px;
+		line-height: 1.6;
+	}
+	.count {
+		font-size: 15px;
+		color: var(--muted);
+	}
+	.pinned {
+		margin-bottom: 8px;
+		padding: 26px 28px;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.pinned__eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: var(--fs-eyebrow);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.pinned__badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 2px 9px 2px 7px;
+		border-radius: var(--radius-pill);
+		background: var(--yellow);
+		color: var(--on-yellow);
+	}
+	.pinned__title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 30px;
+		line-height: 1.15;
+	}
+	.pinned__title a:hover {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+	}
+	.pinned__summary {
+		max-width: 760px;
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--ink-2);
+	}
+	.pinned__meta {
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.rss {
+		margin-top: 32px;
+		padding: 24px 28px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--surface);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		font-size: 15px;
+		color: var(--ink-2);
+	}
+	@media (max-width: 720px) {
+		.head {
+			padding: 28px 0 20px;
+		}
+		.pinned {
+			padding: 20px;
+		}
+		.pinned__title {
+			font-size: 25px;
+		}
+		.rss {
+			padding: 20px;
+		}
+	}
+</style>

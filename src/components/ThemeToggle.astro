@@ -2,7 +2,7 @@
 /**
  * Theme toggle (icon button, 44px). Shows a moon in light mode and a sun in dark mode.
  * The choice is saved in localStorage ("theme") and applied before paint by BaseHead's inline script.
- * Several toggles can be on a page (desktop + phone nav); they all stay in sync.
+ * Also drives any [data-theme-set="light|dark"] buttons (the phone menu's Appearance pills).
  */
 ---
 
@@ -15,9 +15,7 @@
 	const KEY = 'theme';
 	const root = document.documentElement;
 	const isDark = () =>
-		root.dataset.theme
-			? root.dataset.theme === 'dark'
-			: window.matchMedia('(prefers-color-scheme: dark)').matches;
+		root.dataset.theme ? root.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 	const sync = () => {
 		const dark = isDark();
@@ -25,19 +23,25 @@
 			b.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
 			b.dataset.mode = dark ? 'dark' : 'light';
 		});
+		document.querySelectorAll<HTMLButtonElement>('[data-theme-set]').forEach((b) => {
+			b.setAttribute('aria-pressed', String((b.dataset.themeSet === 'dark') === dark));
+		});
+	};
+	const set = (theme: 'light' | 'dark') => {
+		root.dataset.theme = theme;
+		try {
+			localStorage.setItem(KEY, theme);
+		} catch {
+			/* storage unavailable: the choice lasts for this page only */
+		}
+		sync();
 	};
 
 	document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) =>
-		b.addEventListener('click', () => {
-			const next = isDark() ? 'light' : 'dark';
-			root.dataset.theme = next;
-			try {
-				localStorage.setItem(KEY, next);
-			} catch {
-				/* storage unavailable: the choice lasts for this page only */
-			}
-			sync();
-		}),
+		b.addEventListener('click', () => set(isDark() ? 'light' : 'dark')),
+	);
+	document.querySelectorAll<HTMLButtonElement>('[data-theme-set]').forEach((b) =>
+		b.addEventListener('click', () => set(b.dataset.themeSet === 'dark' ? 'dark' : 'light')),
 	);
 	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sync);
 	sync();

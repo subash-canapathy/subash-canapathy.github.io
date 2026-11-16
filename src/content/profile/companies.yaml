@@ -3,6 +3,6 @@
 - { id: microsoft, name: Microsoft, logo: microsoft, url: "https://www.microsoft.com" }
 - { id: m365-copilot, name: "Microsoft 365 Copilot", logo: m365-copilot, parent: microsoft }
 - { id: amazon, name: Amazon, logo: amazon }
-- { id: aws, name: "Amazon Web Services", logo: aws, parent: amazon }
+- { id: aws, name: "AWS", logo: aws, parent: amazon }
 - { id: comcast, name: Comcast, logo: comcast }
 - { id: emc, name: EMC, logo: emc }

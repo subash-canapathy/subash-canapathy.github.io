@@ -1,0 +1,56 @@
+---
+/** Company logo on a white rounded tile (white in both themes, so full-colour logos stay true). */
+import { Image } from 'astro:assets';
+import { type Company, logoFor } from '../lib/profile';
+
+interface Props {
+	company: Company;
+	size?: 44 | 40 | 30;
+}
+const { company, size = 44 } = Astro.props;
+const logo = logoFor(company);
+---
+
+<span class:list={['tile', `tile--${size}`, { 'tile--wide': logo.wide }]}>
+	<Image src={logo.src} alt={logo.alt} width={size * 2} loading="lazy" />
+</span>
+
+<style>
+	.tile {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--logo-tile);
+		border: 1px solid var(--line);
+	}
+	.tile--44 {
+		width: 44px;
+		height: 44px;
+		padding: 6px;
+		border-radius: 10px;
+	}
+	.tile--40 {
+		width: 40px;
+		height: 40px;
+		padding: 6px;
+		border-radius: 9px;
+	}
+	.tile--30 {
+		width: 30px;
+		height: 30px;
+		padding: 4px;
+		border-radius: 7px;
+	}
+	.tile--wide {
+		padding: 3px;
+	}
+	.tile :global(img) {
+		display: block;
+		max-width: 100%;
+		max-height: 100%;
+		width: auto;
+		height: auto;
+		object-fit: contain;
+	}
+</style>

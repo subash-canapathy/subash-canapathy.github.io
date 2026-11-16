@@ -7,7 +7,6 @@ export const SITE_DESCRIPTION =
 export const FALLBACK_LINKS = {
 	linkedin: 'https://www.linkedin.com/',
 	github: 'https://github.com/subash-canapathy',
-	instagram: 'https://www.instagram.com/',
 } as const;
 
 // Primary navigation (PLAN §4): Home · Articles · Profile · Photography.

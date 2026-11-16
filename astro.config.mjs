@@ -5,8 +5,10 @@ import { defineConfig, fontProviders } from 'astro/config';
 // Preview URL until cutover; switch SITE_URL (or this default) to https://subash.org at cutover (PLAN §9).
 const site = process.env.SITE_URL ?? 'https://subash-canapathy.github.io';
 
-// Pages that exist only for review or for the PDF build: never in the sitemap.
-const unlisted = ['/styleguide/', '/profile/print/'];
+// Only real pages go in the sitemap: not the style guide, the print page or the old-URL redirect pages.
+const listed = (pathname) =>
+	pathname === '/' || /^\/(articles|profile|photography)\//.test(pathname);
+const unlisted = ['/profile/print/'];
 
 export default defineConfig({
 	site,
@@ -15,9 +17,14 @@ export default defineConfig({
 	build: { format: 'directory' },
 	integrations: [
 		sitemap({
-			filter: (page) => !unlisted.some((p) => new URL(page).pathname === p),
+			filter: (page) => {
+				const pathname = new URL(page).pathname;
+				return listed(pathname) && !unlisted.includes(pathname);
+			},
 		}),
 	],
+	// Code blocks take their colours from the design tokens (src/styles/prose.css).
+	markdown: { shikiConfig: { theme: 'css-variables' } },
 	// Newsreader + Inter only (PLAN §5). Downloaded at build time and self-hosted from /_astro/.
 	fonts: [
 		{

@@ -1,0 +1,48 @@
+---
+/** /articles/tag/<tag>/: every article with that tag, newest first. No pinned card here. */
+import ArticleRows from '../../../components/ArticleRows.astro';
+import BackLink from '../../../components/BackLink.astro';
+import Eyebrow from '../../../components/Eyebrow.astro';
+import TagPills from '../../../components/TagPills.astro';
+import Base from '../../../layouts/Base.astro';
+import { getArticles, tagCounts, tagSlug } from '../../../lib/articles';
+import { url } from '../../../lib/url';
+
+export async function getStaticPaths() {
+	const all = await getArticles();
+	return tagCounts(all).map((t) => ({ params: { tag: t.slug }, props: { tag: t.tag } }));
+}
+const { tag } = Astro.props as { tag: string };
+const slug = Astro.params.tag!;
+const all = await getArticles();
+const tagged = all.filter((a) => a.data.tags.some((t) => tagSlug(t) === slug));
+---
+
+<Base title={`${tag} · Articles`} description={`Articles tagged ${tag}.`}>
+	<div class="container page">
+		<header class="head">
+			<BackLink href={url('/articles/')}>All articles</BackLink>
+			<Eyebrow>Tag</Eyebrow>
+			<h1 class="page-title">{tag}</h1>
+			<p class="count">{tagged.length} {tagged.length === 1 ? 'article' : 'articles'}</p>
+			<TagPills tags={tagCounts(all)} total={all.length} selected={slug} />
+		</header>
+		<ArticleRows articles={tagged} />
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-bottom: 64px;
+	}
+	.head {
+		padding: 32px 0 8px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.count {
+		font-size: 15px;
+		color: var(--muted);
+	}
+</style>

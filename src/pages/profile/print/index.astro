@@ -1,0 +1,278 @@
+---
+/**
+ * The resume, as a print page. Not linked and not indexed: after the site is built,
+ * scripts/make-resume-pdf.mjs prints this page to /SubashCanapathy-Resume.pdf and removes it.
+ * Same content files as the Profile page, in a tighter cut.
+ */
+import { Font } from 'astro:assets';
+import { dateRange, getCareer, monthYear } from '../../../lib/profile';
+import '../../../styles/tokens.css';
+
+const { profile, roles, companyOf, employerOf } = await getCareer();
+const main = roles.filter((r) => r.data.resume.include && Number(r.data.start.slice(0, 4)) >= profile.earlier_roles_before);
+const earlier = roles.filter((r) => r.data.resume.include && Number(r.data.start.slice(0, 4)) < profile.earlier_roles_before);
+const short = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+const realLinkedin = !/linkedin\.com\/?$/.test(profile.links.linkedin);
+---
+
+<!doctype html>
+<html lang="en-CA" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="robots" content="noindex" />
+		<title>{profile.name} · Resume</title>
+		<Font cssVariable="--font-serif" />
+		<Font cssVariable="--font-sans" />
+	</head>
+	<body>
+		<header>
+			<h1>{profile.name}</h1>
+			<p class="title">{profile.title}, {profile.employer}</p>
+			<p class="contact">
+				{[profile.location, 'subash.org', realLinkedin && short(profile.links.linkedin), short(profile.links.github)].filter(Boolean).join('  ·  ')}
+			</p>
+		</header>
+
+		{
+			profile.summary.length > 0 && (
+				<section>
+					<h2>Summary</h2>
+					{profile.summary.map((p) => <p>{p}</p>)}
+				</section>
+			)
+		}
+
+		{
+			profile.impact.length > 0 && (
+				<section>
+					<h2>Key achievements</h2>
+					<ul class="impact">
+						{profile.impact.map((m) => (
+							<li>
+								<strong>{m.value}</strong> {m.label}
+							</li>
+						))}
+					</ul>
+					{profile.ai_transformation && <p class="ai">{profile.ai_transformation.text}</p>}
+				</section>
+			)
+		}
+
+		<section>
+			<h2>Experience</h2>
+			{
+				main.map((r) => (
+					<div class="role">
+						<div class="role__head">
+							<p>
+								<strong>{r.data.title}</strong>, {employerOf(r).name}
+								{companyOf(r).id !== employerOf(r).id && ` (${companyOf(r).name})`}
+							</p>
+							<p class="dates">{dateRange(r.data.start, r.data.end)}</p>
+						</div>
+						<p class="scope">
+							{r.data.scope}
+							{r.data.location && ` · ${r.data.location}`}
+						</p>
+						<ul>
+							<li>{r.data.outcome}</li>
+							{(r.data.resume.bullets ?? []).map((b) => <li>{b}</li>)}
+						</ul>
+					</div>
+				))
+			}
+			{
+				earlier.length > 0 && (
+					<ul class="earlier">
+						{earlier.map((r) => (
+							<li>
+								<span>
+									<strong>{r.data.title}</strong>, {r.data.scope}
+									{r.data.location && ` · ${r.data.location}`}
+								</span>
+								<span class="dates">{dateRange(r.data.start, r.data.end)}</span>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</section>
+
+		{
+			Object.keys(profile.competencies).length > 0 && (
+				<section>
+					<h2>Competencies</h2>
+					{Object.entries(profile.competencies).map(([group, items]) => (
+						<p class="comp">
+							<strong>{group}:</strong> {items.join(', ')}
+						</p>
+					))}
+				</section>
+			)
+		}
+
+		<div class="cols">
+			{
+				profile.education.length > 0 && (
+					<section>
+						<h2>Education</h2>
+						{profile.education.map((e) => (
+							<p>
+								<strong>{e.degree}</strong>
+								<br />
+								{e.school}
+								{e.years && `, ${e.years}`}
+							</p>
+						))}
+						{profile.languages.length > 0 && (
+							<p>
+								<strong>Languages:</strong> {profile.languages.map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).join(', ')}
+							</p>
+						)}
+					</section>
+				)
+			}
+			{
+				profile.patents.length > 0 && (
+					<section>
+						<h2>Patents</h2>
+						{profile.patents.map((p) => (
+							<p>
+								<strong>{p.title}</strong>
+								<br />
+								{[p.company, p.number, p.date && monthYear(p.date)].filter(Boolean).join(' · ')}
+							</p>
+						))}
+					</section>
+				)
+			}
+		</div>
+	</body>
+</html>
+
+<style is:global>
+	@page {
+		size: Letter;
+		margin: 14mm 15mm;
+	}
+	* {
+		box-sizing: border-box;
+	}
+	html {
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
+	}
+	body {
+		max-width: 186mm;
+		margin: 0 auto;
+		padding: 10mm 0;
+		background: #fff;
+		color: #1a1917;
+		font-family: var(--font-sans-stack);
+		font-size: 9.6pt;
+		line-height: 1.45;
+	}
+	@media print {
+		body {
+			padding: 0;
+		}
+	}
+	p,
+	ul,
+	h1,
+	h2 {
+		margin: 0;
+	}
+	header {
+		padding-bottom: 8pt;
+		border-bottom: 2.5pt solid #f2d872;
+	}
+	h1 {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 25pt;
+		line-height: 1.1;
+		letter-spacing: -0.01em;
+	}
+	.title {
+		margin-top: 3pt;
+		font-size: 11.5pt;
+		font-weight: 500;
+	}
+	.contact {
+		margin-top: 3pt;
+		color: #4f4d48;
+		white-space: pre-wrap;
+	}
+	section {
+		margin-top: 11pt;
+	}
+	h2 {
+		margin-bottom: 5pt;
+		padding-bottom: 2pt;
+		border-bottom: 0.6pt solid #cdc7ba;
+		font-size: 8pt;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #4f4d48;
+	}
+	section > p + p {
+		margin-top: 5pt;
+	}
+	strong {
+		font-weight: 600;
+	}
+	ul {
+		padding-left: 12pt;
+	}
+	li + li {
+		margin-top: 1.5pt;
+	}
+	.impact {
+		columns: 2;
+		column-gap: 18pt;
+	}
+	.impact li {
+		break-inside: avoid;
+	}
+	.ai {
+		margin-top: 5pt;
+	}
+	.role {
+		break-inside: avoid;
+		margin-top: 8pt;
+	}
+	.role:first-of-type {
+		margin-top: 0;
+	}
+	.role__head,
+	.earlier li {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 12pt;
+	}
+	.dates {
+		color: #4f4d48;
+		white-space: nowrap;
+	}
+	.scope {
+		color: #4f4d48;
+		margin-bottom: 2pt;
+	}
+	.earlier {
+		list-style: none;
+		margin-top: 8pt;
+		padding: 5pt 0 0;
+		border-top: 0.6pt solid #e4e0d7;
+	}
+	.comp + .comp {
+		margin-top: 2pt;
+	}
+	.cols {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 18pt;
+	}
+</style>

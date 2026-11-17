@@ -12,8 +12,6 @@ The site is built with [Astro](https://astro.build) from Markdown and YAML files
 published to GitHub Pages by a GitHub Actions workflow on every push to `master`. The resume PDF is generated
 during the build from the same profile data as the Profile page.
 
-How I update content is in [AUTHORING.md](AUTHORING.md).
-
 ## Contributions
 
 This is a personal repository. It exists only so I can maintain my own website, and it is public only

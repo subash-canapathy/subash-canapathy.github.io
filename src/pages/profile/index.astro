@@ -1,7 +1,8 @@
 ---
 /**
- * Profile (PLAN §14.3): masthead → Impact → How I work → Featured work → Experience + sidebar.
- * Everything comes from src/content/profile/ (profile.yaml, companies.yaml, one folder per role).
+ * Profile (PLAN §14.3): masthead → Work highlights → How I work → Experience + sidebar.
+ * Everything comes from src/content/profile/ (profile.yaml, companies.yaml, one folder per role)
+ * and src/content/work/ (the three Work highlights, each with its own page).
  */
 import { render } from 'astro:content';
 import ArtifactCard from '../../components/ArtifactCard.astro';
@@ -9,22 +10,19 @@ import Eyebrow from '../../components/Eyebrow.astro';
 import LogoTile from '../../components/LogoTile.astro';
 import Portrait from '../../components/Portrait.astro';
 import Base from '../../layouts/Base.astro';
-import { articleUrl, getArticles } from '../../lib/articles';
-import { dateRange, duration, getCareer, monthYear, yearRange } from '../../lib/profile';
+import { getArticles } from '../../lib/articles';
+import { dateRange, duration, getCareer, monthYear } from '../../lib/profile';
 import { url } from '../../lib/url';
+import { getWork, workUrl } from '../../lib/work';
 
-const { profile, groups, earlier, featured, companyOf, employerOf } = await getCareer();
+const { profile, groups, earlier, employerOf } = await getCareer();
+const work = await getWork();
 const articles = await getArticles();
 const bodies = new Map(
 	await Promise.all(groups.flatMap((g) => g.roles).map(async (r) => [r.id, (await render(r)).Content] as const)),
 );
-const LABEL = { video: 'Video', talk: 'Talk', page: 'Product page', post: 'Launch post', article: 'Article' } as const;
 const HAT = { Coach: 'coach', Strategist: 'strategist', Builder: 'builder', Operator: 'operator' } as const;
 const blocks = profile.working_style.flatMap((w) => Array.from({ length: w.percent / 5 }, () => HAT[w.hat]));
-const practices = (profile.ai_transformation?.practices ?? []).map((p) => {
-	const article = articles.find((a) => a.id === p.article);
-	return { ...p, title: article?.data.title ?? p.title ?? p.name, href: article ? articleUrl(article) : undefined };
-});
 const resumeHref = url('/SubashCanapathy-Resume.pdf');
 const earlierYears = earlier.length ? `${earlier.at(-1)!.data.start.slice(0, 4)} – ${earlier[0]!.data.end?.slice(0, 4) ?? 'now'}` : '';
 const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].join(', ');
@@ -69,48 +67,32 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		</section>
 
 		{
-			profile.impact.length > 0 && (
-				<section class="block" aria-labelledby="impact-h">
-					<h2 class="section-title" id="impact-h">Impact</h2>
-					<div class="metrics">
-						{profile.impact.map((m) => (
-							<div class="metric">
-								<span class="metric__value">{m.value}</span>
-								<span class="metric__label">{m.label}</span>
-							</div>
-						))}
-					</div>
-					{profile.ai_transformation && (
-						<div class="ai">
-							<div class="ai__lead">
-								<span class="ai__icon">
-									<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></svg>
-								</span>
-								<h3>Organizational AI transformation</h3>
-								<p>{profile.ai_transformation.text}</p>
-							</div>
-							<div class="ai__articles">
-								<Eyebrow>Related articles</Eyebrow>
-								<div class="ai__grid">
-									{practices.map((p) =>
-										p.href ? (
-											<a class="ai__card" href={p.href}>
-												<span class="ai__practice">{p.name}</span>
-												<span class="ai__title">{p.title}</span>
-												<span class="ai__more">Article →</span>
-											</a>
-										) : (
-											<div class="ai__card">
-												<span class="ai__practice">{p.name}</span>
-												<span class="ai__title">{p.title}</span>
-												<span class="ai__more">Article coming soon</span>
-											</div>
-										),
-									)}
-								</div>
-							</div>
+			work.items.length > 0 && (
+				<section class="block" aria-labelledby="hl-h">
+					<div class="hl">
+						<div class="hl__lead">
+							<span class="hl__icon">
+								<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /></svg>
+							</span>
+							<h2 id="hl-h">{profile.highlights_intro?.title ?? 'Work highlights'}</h2>
+							{profile.highlights_intro && <p>{profile.highlights_intro.text}</p>}
 						</div>
-					)}
+						<div class="hl__grid">
+							{work.items.map((w) => (
+								<a class="hl__card" href={workUrl(w)}>
+									<span class="hl__kicker">
+										<LogoTile company={work.companyOf(w)} size={30} />
+										<span>
+											{work.employerOf(w).name} · {w.data.years}
+										</span>
+									</span>
+									<span class="hl__title">{w.data.title}</span>
+									<span class="hl__hook">{w.data.hook}</span>
+									<span class="hl__more">Read the story →</span>
+								</a>
+							))}
+						</div>
+					</div>
 				</section>
 			)
 		}
@@ -163,45 +145,6 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 								))}
 							</div>
 						)}
-					</div>
-				</section>
-			)
-		}
-
-		{
-			featured.length > 0 && (
-				<section class="block" aria-labelledby="fw-h">
-					<div class="block__head">
-						<h2 class="section-title" id="fw-h">Featured work</h2>
-						<a class="jump" href="#experience">
-							Full experience ↓<span aria-hidden="true" />
-						</a>
-					</div>
-					<div class="featured">
-						{featured.map((r) => {
-							const lead = r.data.artifacts[r.data.featured!.artifact];
-							const types = [...new Set(r.data.artifacts.map((a) => LABEL[a.type]))];
-							return (
-								<article class="fcard">
-									{lead ? (
-										<ArtifactCard artifact={lead} articles={articles} previewOnly />
-									) : (
-										<div class="fcard__blank">
-											<span>{companyOf(r).name}</span>
-										</div>
-									)}
-									<p class="fcard__meta">
-										<LogoTile company={companyOf(r)} size={30} />
-										<span>
-											{employerOf(r).name} · {yearRange(r.data.start, r.data.end)}
-										</span>
-									</p>
-									<h3>{r.data.featured!.title}</h3>
-									<p class="fcard__line">{r.data.featured!.line ?? r.data.outcome}</p>
-									{types.length > 0 && <p class="fcard__types">{types.join(' · ')}</p>}
-								</article>
-							);
-						})}
 					</div>
 				</section>
 			)
@@ -528,33 +471,10 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		background: var(--yellow);
 	}
 
-	/* Impact */
-	.metrics {
+	/* Work highlights: intro on the left, three project cards on the right (stacked on phones). */
+	.hl {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 28px;
-	}
-	.metric {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding-top: 16px;
-		border-top: 1px solid var(--line-section);
-	}
-	.metric__value {
-		font-family: var(--font-serif-stack);
-		font-size: 44px;
-		font-weight: 500;
-		line-height: 1.05;
-	}
-	.metric__label {
-		font-size: 14px;
-		line-height: 1.5;
-		color: var(--ink-2);
-	}
-	.ai {
-		display: grid;
-		grid-template-columns: 300px minmax(0, 1fr);
+		grid-template-columns: 240px minmax(0, 1fr);
 		gap: 24px;
 		align-items: start;
 		padding: 26px;
@@ -562,12 +482,12 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		border-radius: 10px;
 		background: var(--surface);
 	}
-	.ai__lead {
+	.hl__lead {
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 	}
-	.ai__icon {
+	.hl__icon {
 		width: 40px;
 		height: 40px;
 		display: flex;
@@ -577,54 +497,69 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		border-radius: var(--radius-pill);
 		background: var(--card);
 	}
-	.ai__lead h3 {
+	.hl__lead h2 {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
 		font-size: 24px;
 		line-height: 1.2;
 	}
-	.ai__lead p {
+	.hl__lead p {
 		font-size: 15px;
 		line-height: 1.6;
 		color: var(--ink-2);
 	}
-	.ai__articles {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		min-width: 0;
-	}
-	.ai__grid {
+	.hl__grid {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 14px;
+		min-width: 0;
 	}
-	.ai__card {
+	.hl__card {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding: 16px;
+		gap: 10px;
+		padding: 18px;
 		border: 1px solid var(--line);
 		border-radius: 8px;
 		background: var(--card);
+		color: var(--ink);
 		transition: border-color var(--t-fast);
 	}
-	a.ai__card:hover {
+	.hl__card:hover {
 		border-color: var(--line-control);
+		text-decoration: none;
 	}
-	.ai__practice {
+	.hl__kicker {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		font-size: var(--fs-eyebrow);
 		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--muted);
 	}
-	.ai__title {
+	.hl__title {
 		font-family: var(--font-serif-stack);
-		font-size: 18px;
-		line-height: 1.3;
+		font-size: 21px;
+		line-height: 1.25;
 	}
-	.ai__more {
-		font-size: 13px;
-		color: var(--muted);
+	.hl__hook {
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--ink-2);
+	}
+	.hl__more {
+		margin-top: auto;
+		padding-top: 4px;
+		font-size: 14px;
+		font-weight: 500;
+	}
+	.hl__card:hover .hl__more {
+		text-decoration: underline;
+		text-decoration-color: var(--yellow);
+		text-decoration-thickness: var(--bar);
+		text-underline-offset: 5px;
 	}
 
 	/* How I work */
@@ -743,57 +678,6 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		background: var(--card);
 		font-size: 14px;
 		line-height: 1.2;
-	}
-
-	/* Featured work */
-	.featured {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 22px;
-	}
-	.fcard {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		padding: 14px 14px 18px;
-		border: 1px solid var(--line);
-		border-radius: 10px;
-		background: var(--card);
-	}
-	.fcard__blank {
-		aspect-ratio: 16 / 9;
-		display: flex;
-		align-items: flex-end;
-		padding: 12px;
-		border: 1px solid var(--line);
-		border-radius: 6px;
-		background: var(--surface);
-		font-size: var(--fs-eyebrow);
-		font-weight: 600;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.fcard__meta {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		font-size: 13px;
-		color: var(--muted);
-	}
-	.fcard h3 {
-		font-size: 21px;
-		line-height: 1.25;
-	}
-	.fcard__line {
-		font-size: 15px;
-		line-height: 1.55;
-		color: var(--ink-2);
-	}
-	.fcard__types {
-		margin-top: auto;
-		font-size: 13px;
-		color: var(--muted);
 	}
 
 	/* Experience + sidebar */
@@ -1064,7 +948,7 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		.sidebar {
 			position: static;
 		}
-		.ai {
+		.hl {
 			grid-template-columns: minmax(0, 1fr);
 		}
 		.how {
@@ -1103,34 +987,17 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		.block {
 			padding-bottom: 40px;
 		}
-		.metrics {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 20px;
-		}
-		.metric__value {
-			font-size: 34px;
-		}
-		.ai,
+		.hl,
 		.panel {
 			padding: 20px;
 		}
-		.ai__grid {
+		.hl__grid {
 			grid-template-columns: minmax(0, 1fr);
+			gap: 12px;
 		}
-		/* Featured work: a swipeable row. */
-		.featured {
-			grid-template-columns: none;
-			grid-auto-flow: column;
-			grid-auto-columns: 82%;
-			gap: 14px;
-			overflow-x: auto;
-			margin-inline: calc(-1 * var(--pad-x));
-			padding-inline: var(--pad-x);
-			scroll-snap-type: x mandatory;
-			scrollbar-width: none;
-		}
-		.fcard {
-			scroll-snap-align: center;
+		.hl__card {
+			padding: 16px;
+			gap: 8px;
 		}
 		.group {
 			grid-template-columns: 32px minmax(0, 1fr);

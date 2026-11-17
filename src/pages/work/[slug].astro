@@ -1,0 +1,184 @@
+---
+/**
+ * A Work highlight page (one per folder in src/content/work/). Header from the front matter,
+ * the Markdown body as the story, then the artifacts. Linked from the Profile page's Work highlights.
+ */
+import { render } from 'astro:content';
+import ArtifactCard from '../../components/ArtifactCard.astro';
+import BackLink from '../../components/BackLink.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import LogoTile from '../../components/LogoTile.astro';
+import Base from '../../layouts/Base.astro';
+import { getArticles } from '../../lib/articles';
+import { url } from '../../lib/url';
+import { type Work, getWork, workUrl } from '../../lib/work';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+	const { items } = await getWork();
+	return items.map((w) => ({ params: { slug: w.id }, props: { w } }));
+}
+const { w } = Astro.props as { w: Work };
+const { companyOf, employerOf, items } = await getWork();
+const { Content } = await render(w);
+const articles = await getArticles();
+const others = items.filter((o) => o.id !== w.id);
+const { title, hook, takeaway, years, artifacts } = w.data;
+---
+
+<Base title={title} description={hook}>
+	<div class="container work">
+		<header class="head">
+			<BackLink href={url('/profile/')}>Profile</BackLink>
+			<p class="kicker">
+				<LogoTile company={companyOf(w)} size={30} />
+				<Eyebrow as="span">{employerOf(w).name} · {years}</Eyebrow>
+			</p>
+			<h1 class="title">{title}</h1>
+			<p class="hook">{hook}</p>
+		</header>
+
+		{
+			takeaway && (
+				<blockquote class="takeaway">
+					<p>{takeaway}</p>
+				</blockquote>
+			)
+		}
+
+		<div class="prose body">
+			<Content />
+		</div>
+
+		{
+			artifacts.length > 0 && (
+				<section class="artifacts-block" aria-labelledby="art-h">
+					<h2 class="section-title" id="art-h">Artifacts</h2>
+					<div class="artifacts">
+						{artifacts.map((a) => (
+							<ArtifactCard artifact={a} articles={articles} />
+						))}
+					</div>
+				</section>
+			)
+		}
+
+		{
+			others.length > 0 && (
+				<nav class="more" aria-label="Other work highlights">
+					<Eyebrow>More work highlights</Eyebrow>
+					<ul>
+						{others.map((o) => (
+							<li>
+								<a href={workUrl(o)}>{o.data.title}</a>
+								<span class="muted">{employerOf(o).name} · {o.data.years}</span>
+							</li>
+						))}
+					</ul>
+				</nav>
+			)
+		}
+	</div>
+</Base>
+
+<style>
+	.work {
+		max-width: 760px;
+		padding-top: 40px;
+		padding-bottom: 64px;
+		display: flex;
+		flex-direction: column;
+		gap: 28px;
+	}
+	.head {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.kicker {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.title {
+		font-family: var(--font-serif-stack);
+		font-weight: 500;
+		font-size: 48px;
+		line-height: 1.08;
+		letter-spacing: -0.015em;
+	}
+	.hook {
+		font-size: 19px;
+		line-height: 1.55;
+		color: var(--ink-2);
+	}
+	.takeaway {
+		margin: 0;
+		padding: 18px 22px;
+		border-left: none;
+		border-radius: 10px;
+		background: var(--surface);
+		border: 1px solid var(--line);
+	}
+	.takeaway p {
+		font-family: var(--font-serif-stack);
+		font-size: 22px;
+		line-height: 1.4;
+	}
+	.artifacts-block {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.artifacts {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 16px;
+	}
+	.more {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding-top: 22px;
+		border-top: 1px solid var(--line);
+	}
+	.more ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.more li {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 12px;
+		align-items: baseline;
+	}
+	.more a {
+		font-family: var(--font-serif-stack);
+		font-size: 19px;
+	}
+	.muted {
+		color: var(--muted);
+		font-size: 14px;
+	}
+	@media (max-width: 720px) {
+		.work {
+			padding-top: 24px;
+		}
+		.title {
+			font-size: 34px;
+		}
+		.hook {
+			font-size: 17px;
+		}
+		.takeaway p {
+			font-size: 19px;
+		}
+		.artifacts {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

@@ -93,7 +93,7 @@ export async function getCareer() {
 	};
 
 	for (const c of companies) logoFor(c);
-	for (const key of ['featured', 'highlight'] as const) {
+	for (const key of ['highlight'] as const) {
 		const seen = new Map<number, string>();
 		for (const r of roles) {
 			const order = r.data[key]?.order;
@@ -125,8 +125,7 @@ export async function getCareer() {
 		}
 	}
 
-	const featured = roles.filter((r) => r.data.featured).sort((a, b) => a.data.featured!.order - b.data.featured!.order);
 	const highlights = roles.filter((r) => r.data.highlight).sort((a, b) => a.data.highlight!.order - b.data.highlight!.order);
 
-	return { profile, companies, roles, groups, earlier, featured, highlights, companyOf, employerOf };
+	return { profile, companies, roles, groups, earlier, highlights, companyOf, employerOf };
 }

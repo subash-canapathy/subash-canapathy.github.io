@@ -1,6 +1,6 @@
 ---
 # Copy this folder to src/content/articles/<your-slug>/ (the folder name becomes /articles/<your-slug>/).
-# Folders starting with "_" are never published. Full guide: README › "Write an article".
+# Folders starting with "_" are never published. Full guide: AUTHORING.md › "Write an article".
 title: "Article title"
 description: "One line for cards, RSS and share previews (220 characters at most)."
 date: 2026-01-31

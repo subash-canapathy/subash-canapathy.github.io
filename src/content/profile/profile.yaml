@@ -1,5 +1,5 @@
 # Page-level profile content. Feeds the Home hero, the Profile page and the resume PDF.
-# Edit, save, push: the build checks every field. See README › "Update the profile".
+# Edit, save, push: the build checks every field. See AUTHORING.md › "Update the profile".
 
 name: Subash Canapathy
 title: Partner Director of Engineering # exactly as held
@@ -10,6 +10,10 @@ links:
   github: "https://github.com/subash-canapathy"
   linkedin: "https://www.linkedin.com/in/subashcanapathy/"
   # instagram: "https://www.instagram.com/…"
+# Resume PDF only (contact line under the title). Not shown anywhere on the site.
+contact:
+  email: "subash.canapathy@gmail.com"
+  phone: "+1 (778)-798-8604"
 
 # Home page hero
 tagline: "Engineering Leader, AI Change Agent, & a forever humanist."
@@ -30,27 +34,10 @@ summary:
     As a change agent and servant leader, I foster psychologically safe, customer-obsessed teams where
     trust, curiosity, and ownership of outcomes lead to impactful, high-performing products.
 
-# Impact strip: four numbers, in display order.
-impact:
-  - { value: "140", label: "people across three product teams in North America, Brazil and India" }
-  - { value: "2 × $50M+", label: "ARR products taken from zero to one: AWS MWAA and Microsoft People Skills" }
-  - { value: "350%", label: "above MWAA's projected first-year revenue rate: $60M ARR within 5 months of GA" }
-  - { value: "<5%", label: "average attrition across roles over 10 years, with bar-raising thrive scores" }
-
-# AI transformation band. `article` is an article folder name; the card links to it once that
-# article exists (until then `title` is shown without a link).
-ai_transformation:
-  text: "Driving organizational AI transformation through project squads, agentic SDLC and growth plans for agentic systems."
-  practices:
-    - name: Project squads
-      article: hybrid-squads-model-for-enterprise-product-teams
-      title: Hybrid Squads Model for Enterprise Product Teams
-    - name: Agentic SDLC
-      article: shaped-specs-for-agentic-product-development
-      title: Shaped Specs for agentic product development
-    - name: Growth plans for agentic systems
-      article: towards-frontier-teams-human-agent-ratios
-      title: Towards Frontier Teams and Human-Agent Ratios
+# Intro inside the Work highlights band on the Profile page. The three cards come from src/content/work/.
+highlights_intro:
+  title: Work highlights
+  text: "Three launches, three stories, and my reflections on the bet, the architecture, the calls that mattered and what they taught me."
 
 # How I work: share of a typical week. Percents are multiples of 5 and must add up to 100.
 # `line` (optional) replaces `covers` in the row under the chart.
@@ -76,9 +63,9 @@ education:
 patents:
   - title: "Generating and using context briefs to identify relevant chat responses"
     company: Microsoft
-    number: "US-20250138910-A1"
+    number: "US 2025/0138910 A1 (application)"
     date: "2025-05"
-    url: "https://patents.google.com/patent/US20250138910A1"
+    url: "https://patents.google.com/patent/US20250138910A1/en"
   - title: "Determining load completion of dynamically updated content"
     company: Amazon
     number: "US-10417306-B1"

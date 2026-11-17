@@ -1,6 +1,7 @@
 // Content schemas for the whole site, in one place. A missing or misspelled field fails
 // `npm run check` / `npm run build` with a readable message, so a broken push never reaches the live site.
 import { defineCollection } from 'astro:content';
+import type { SchemaContext } from 'astro/content/config';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
@@ -34,6 +35,16 @@ const articles = defineCollection({
 			.refine((a) => !a.hero || !!a.hero_alt, { message: 'hero_alt is required when hero is set', path: ['hero_alt'] }),
 });
 
+/* Artifacts: links shown as cards on a role and on a work highlight page. */
+const artifactSchema = (image: SchemaContext['image']) =>
+	z.discriminatedUnion('type', [
+		z.object({ type: z.literal('video'), title: z.string(), url: z.url(), duration: z.string().optional() }),
+		z.object({ type: z.literal('page'), title: z.string(), url: z.url(), screenshot: image() }),
+		z.object({ type: z.literal('post'), title: z.string(), url: z.url() }),
+		z.object({ type: z.literal('talk'), title: z.string(), url: z.url() }),
+		z.object({ type: z.literal('article'), article: z.string().min(1) }),
+	]);
+
 /* Profile */
 const hats = ['Coach', 'Strategist', 'Builder', 'Operator'] as const;
 
@@ -48,19 +59,14 @@ const profile = defineCollection({
 			links: z
 				.object({ linkedin: z.url().optional(), github: z.url().optional(), instagram: z.url().optional() })
 				.default({}),
+			// Resume PDF only: shown in the contact line under the title. Not shown on the site.
+			contact: z.object({ email: z.email().optional(), phone: z.string().min(1).optional() }).default({}),
 			summary: z.array(z.string().min(1)).default([]),
 			home_intro: z.string().min(1),
 			tagline: z.string().min(1),
 			tagline_highlight: z.string().min(1),
-			impact: z.array(z.object({ value: z.string().min(1), label: z.string().min(1) })).default([]),
-			ai_transformation: z
-				.object({
-					text: z.string().min(1),
-					practices: z.array(
-						z.object({ name: z.string().min(1), article: z.string().min(1), title: z.string().optional() }),
-					),
-				})
-				.optional(),
+			// Intro inside the Work highlights band on the Profile page.
+			highlights_intro: z.object({ title: z.string().min(1), text: z.string().min(1) }).optional(),
 			working_style: z
 				.array(
 					z.object({
@@ -125,32 +131,33 @@ const roles = defineCollection({
 				outcome: z.string().min(1),
 				scale: z.record(z.string(), z.string()).optional(),
 				open: z.boolean().default(false),
-				featured: z
-					.object({
-						order: z.number().int().min(1).max(3),
-						title: z.string(),
-						line: z.string().optional(),
-						artifact: z.number().int().min(0).default(0),
-					})
-					.optional(),
 				highlight: z.object({ order: z.number().int().min(1).max(4), label: z.string(), line: z.string() }).optional(),
 				resume: z
 					.object({ include: z.boolean().default(true), bullets: z.array(z.string()).max(4).optional() })
 					.default({ include: true }),
-				artifacts: z
-					.array(
-						z.discriminatedUnion('type', [
-							z.object({ type: z.literal('video'), title: z.string(), url: z.url(), duration: z.string().optional() }),
-							z.object({ type: z.literal('page'), title: z.string(), url: z.url(), screenshot: image() }),
-							z.object({ type: z.literal('post'), title: z.string(), url: z.url() }),
-							z.object({ type: z.literal('talk'), title: z.string(), url: z.url() }),
-							z.object({ type: z.literal('article'), article: z.string().min(1) }),
-						]),
-					)
-					.default([]),
+				artifacts: z.array(artifactSchema(image)).default([]),
 			})
 			.strict()
 			.refine((r) => r.end === null || r.start <= r.end, { message: 'start must not be after end', path: ['end'] }),
+});
+
+/* Work highlights: src/content/work/<slug>/index.md (folder name = URL slug, /work/<slug>/).
+ * Exactly three are shown on the Profile page, in `order`. The Markdown body is the project page. */
+const work = defineCollection({
+	loader: glob({ base: './src/content/work', pattern: ['**/index.md', '!_*/**'] }),
+	schema: ({ image }) =>
+		z
+			.object({
+				title: z.string().min(1),
+				company: z.string().min(1), // id from companies.yaml (logo on the card)
+				years: z.string().min(1), // shown on the card, e.g. "2019 – 2021"
+				order: z.number().int().min(1).max(3),
+				hook: z.string().min(1).max(200, 'Keep the hook to one line (200 characters max)'),
+				takeaway: z.string().optional(),
+				role: z.string().optional(), // role id this work belongs to
+				artifacts: z.array(artifactSchema(image)).default([]),
+			})
+			.strict(),
 });
 
 /* Photography: src/content/photos/albums.yaml (the photos themselves are found by folder) */
@@ -166,4 +173,4 @@ const albums = defineCollection({
 		.strict(),
 });
 
-export const collections = { articles, profile, companies, roles, albums };
+export const collections = { articles, profile, companies, roles, work, albums };

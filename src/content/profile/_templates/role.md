@@ -1,6 +1,6 @@
 ---
 # Copy to src/content/profile/roles/<yyyy-mm>-<company>-<slug>/index.md (PLAN §8a, worked example 1).
-id: example-role # stable key used by impact / featured / highlight references
+id: example-role # stable key used by highlight and work references
 title: "Role title"
 company: microsoft # id from companies.yaml
 start: "2024-01" # YYYY-MM, in quotes
@@ -12,7 +12,6 @@ scale:
   Team: "…"
   Regions: "…"
 open: false # expanded by default on desktop
-# featured: { order: 1, title: "…", line: "…" }        # one of the three Featured work cards
 # highlight: { order: 1, label: "…", line: "…" }        # one of the four Home Career Highlights
 resume:
   include: true

@@ -42,9 +42,9 @@ highlights_intro:
 # How I work: share of a typical week. Percents are multiples of 5 and must add up to 100.
 # `line` (optional) replaces `covers` in the row under the chart.
 working_style:
-  - { hat: Coach, covers: "People ops", percent: 35 }
-  - { hat: Strategist, covers: "Product strategy & customer relations", percent: 30 }
-  - { hat: Builder, covers: "Innovation & upskilling", percent: 20 }
+  - { hat: Strategist, covers: "Product strategy & customer relations", percent: 35 }
+  - { hat: Builder, covers: "Innovation & upskilling", percent: 30 }
+  - { hat: Coach, covers: "People ops", percent: 20 }
   - { hat: Operator, covers: "Engineering excellence & rhythm of business", percent: 15 }
 
 competencies:

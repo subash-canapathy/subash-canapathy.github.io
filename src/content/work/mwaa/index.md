@@ -7,7 +7,6 @@ role: mwaa
 hook: "From a stalled idea to a nine-region AWS service in eight months, and $40M ARR six months after launch."
 takeaway: "Make the expensive calls early: architecture, open source, operations on day one. Then a small team can ship a big service on time."
 artifacts:
-  - { type: video, title: "MWAA design choices and road ahead (Airflow Summit 2021)", url: "https://www.youtube.com/watch?v=mtXOlusf4Yo", duration: "14:00" }
   - { type: post, title: "Amazon MWAA: our journey and the road ahead (slides)", url: "https://airflowsummit.org/slides/2021/h7-MWAAJourney.pdf" }
   - { type: post, title: "What is Amazon MWAA? The architecture, as documented at launch", url: "https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html" }
   - { type: post, title: "Introducing Amazon Managed Workflows for Apache Airflow", url: "https://aws.amazon.com/blogs/aws/introducing-amazon-managed-workflows-for-apache-airflow-mwaa/" }
@@ -32,6 +31,8 @@ I was the engineering leader for the service, and in practice its GM: owner of t
 ## The Calls That Mattered
 
 Approval depended on the infrastructure margin math, so the architecture had to be settled before almost anything else. These were the expensive calls, and we made them first.
+
+![Architecture diagram. A serverless control plane on API Gateway, Lambda and DynamoDB provisions each Airflow environment. The environment spans a customer VPC, with Fargate schedulers and workers in private subnets, and a service VPC run by AWS, with the Airflow web server and one Aurora PostgreSQL database per environment, reached through VPC endpoints. S3, SQS, CloudWatch and KMS sit outside.](./architecture.svg "How an MWAA environment fits together at launch. Redrawn from the public docs and our Airflow Summit talk. {wide}")
 
 - **The environment is the unit.** An Airflow environment is what a customer creates, updates, operates and pays for. Each one gets its own metadata database, web server, scheduler and workers, and customers can run as many as they need. Most of the design follows from that one decision.
 - **Serverless all the way down.** The control plane runs on API Gateway and Lambda. Schedulers and workers run as Fargate containers in private subnets. The service's own state lives in DynamoDB. Customers would not know Fargate was underneath unless we told them.
@@ -62,7 +63,12 @@ Then the service grew up:
 - 15 commercial regions by August 2021.
 - Customers like eprimo moving from self-managed Airflow to MWAA, and on to Airflow 2.
 
-In the summer of 2021, my product partner John Jackson and I told the design story at Airflow Summit. The talk and slides are below.
+In the summer of 2021, my product partner John Jackson and I told the design story at Airflow Summit. The talk walks through most of the calls on this page.
+
+<figure class="video">
+<a class="video__link" href="https://www.youtube.com/watch?v=mtXOlusf4Yo" data-yt="mtXOlusf4Yo" target="_blank" rel="noopener" aria-label="Play video: MWAA design choices and road ahead"><img src="https://i.ytimg.com/vi/mtXOlusf4Yo/hqdefault.jpg" alt="" loading="lazy" width="480" height="360" /><span class="video__play" aria-hidden="true"></span></a>
+<figcaption>MWAA design choices and road ahead, Airflow Summit 2021 (14 min).</figcaption>
+</figure>
 
 ## The People
 

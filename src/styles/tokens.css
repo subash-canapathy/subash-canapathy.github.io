@@ -4,12 +4,12 @@
  *
  * Theme switching: each colour is light-dark(<light>, <dark>). The <html> element's
  * color-scheme decides which half applies:
- *   - no choice saved → follows the visitor's system setting (works without JavaScript)
- *   - data-theme="light" | "dark" → the visitor's choice, set before paint by the inline
- *     script in BaseHead and remembered by the theme toggle.
+ *   - default → light, whatever the visitor's system setting
+ *   - data-theme="dark" → the visitor chose Dark with the toggle; set before paint by the inline
+ *     script in BaseHead and remembered in localStorage.
  */
 :root {
-	color-scheme: light dark;
+	color-scheme: light;
 }
 /* On <html> for the whole page; on any element to force a theme locally (the /styleguide/ panels). */
 [data-theme='light'] {
@@ -158,13 +158,4 @@
 	--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
 	/* Dark: a faint light hairline plus a deeper black falloff, so the edge reads on near-black paper. */
 	--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
-}
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) {
-		--hl-bg: var(--hl-marker);
-		--hl-ink: #1a1917;
-		--hl-pad: 0.04em 0.34em 0.06em;
-		--portrait-shadow: 0 0 0 4px var(--bg), 0 0 0 5px #a19e96;
-		--nav-shadow: 0 1px 0 rgba(237, 235, 230, 0.07), 0 10px 22px -10px rgba(0, 0, 0, 0.85);
-	}
 }

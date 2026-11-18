@@ -46,7 +46,7 @@ const { title, hook, takeaway, years, artifacts } = w.data;
 			)
 		}
 
-		<div class="prose body">
+		<div class="prose body" data-prose>
 			<Content />
 		</div>
 
@@ -80,6 +80,49 @@ const { title, hook, takeaway, years, artifacts } = w.data;
 		}
 	</div>
 </Base>
+
+
+<script>
+	// Progressive touches on the story. The page reads fine without them.
+	const prose = document.querySelector<HTMLElement>('[data-prose]');
+	if (prose) {
+		// Images: a Markdown title becomes the caption; "{wide}" at its end widens the figure.
+		prose.querySelectorAll<HTMLImageElement>('img').forEach((img) => {
+			const holder = img.parentElement;
+			if (!holder || holder.closest('figure')) return;
+			const figure = document.createElement('figure');
+			let caption = img.getAttribute('title') ?? '';
+			if (/\{wide\}\s*$/.test(caption)) {
+				figure.classList.add('wide');
+				caption = caption.replace(/\s*\{wide\}\s*$/, '');
+			}
+			img.removeAttribute('title');
+			const alone = holder.tagName === 'P' && holder.childNodes.length === 1;
+			(alone ? holder : img).replaceWith(figure);
+			figure.append(img);
+			if (caption) {
+				const fc = document.createElement('figcaption');
+				fc.textContent = caption;
+				figure.append(fc);
+			}
+		});
+
+		// Videos: a thumbnail link to YouTube; on click, swap in the player (no YouTube load until then).
+		prose.querySelectorAll<HTMLAnchorElement>('a[data-yt]').forEach((a) => {
+			a.addEventListener('click', (e) => {
+				if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+				e.preventDefault();
+				const frame = document.createElement('iframe');
+				frame.src = `https://www.youtube-nocookie.com/embed/${a.dataset.yt}?autoplay=1&rel=0`;
+				frame.title = a.getAttribute('aria-label')?.replace(/^Play video: /, '') ?? 'Video';
+				frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+				frame.allowFullscreen = true;
+				frame.className = 'video__frame';
+				a.replaceWith(frame);
+			});
+		});
+	}
+</script>
 
 <style>
 	.work {

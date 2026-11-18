@@ -20,15 +20,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-<meta name="theme-color" content="#FBFAF7" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#FBFAF7" />
 
-<!-- Apply the saved theme before first paint (no flash). -->
+<!-- Light by default; apply a saved Dark choice before first paint (no flash). -->
 <script is:inline>
+	let t = 'light';
 	try {
-		const t = localStorage.getItem('theme');
-		if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+		if (localStorage.getItem('theme') === 'dark') t = 'dark';
 	} catch (e) {}
+	document.documentElement.dataset.theme = t;
 </script>
 
 <title>{fullTitle}</title>

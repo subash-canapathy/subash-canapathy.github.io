@@ -111,20 +111,13 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 								<div class="blocks" role="img" aria-label={`Share of a typical week: ${profile.working_style.map((w) => `${w.hat} ${w.percent}%`).join(', ')}`}>
 									{blocks.map((hat) => <span class={`blk hat-${hat}`} />)}
 								</div>
-								<p class="legend">
-									{profile.working_style.map((w) => (
-										<span>
-											<span class={`swatch hat-${HAT[w.hat]}`} />
-											{w.hat} <span class="muted">{w.percent}%</span>
-										</span>
-									))}
-								</p>
 								<ul class="hats">
 									{profile.working_style.map((w) => (
 										<li>
 											<span class="hats__name">
 												<span class={`swatch swatch--sm hat-${HAT[w.hat]}`} />
 												{w.hat}
+												<span class="hats__pct">{w.percent}%</span>
 											</span>
 											<span class="hats__line">{w.line ?? w.covers}</span>
 										</li>
@@ -609,17 +602,6 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 	.hat-operator {
 		background: var(--hat-operator);
 	}
-	.legend {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px 18px;
-		font-size: 14px;
-	}
-	.legend > span {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
-	}
 	.swatch {
 		width: 11px;
 		height: 11px;
@@ -638,7 +620,7 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 	}
 	.hats li {
 		display: grid;
-		grid-template-columns: 104px minmax(0, 1fr);
+		grid-template-columns: 140px minmax(0, 1fr);
 		gap: 12px;
 		align-items: baseline;
 		padding: 9px 0;
@@ -650,6 +632,11 @@ const earlierEmployers = [...new Set(earlier.map((r) => employerOf(r).name))].jo
 		gap: 8px;
 		font-family: var(--font-serif-stack);
 		font-size: 18px;
+	}
+	.hats__pct {
+		font-family: var(--font-sans-stack, inherit);
+		font-size: 14px;
+		color: var(--muted);
 	}
 	.hats__line {
 		font-size: 14px;

@@ -4,8 +4,8 @@ import path from 'node:path';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
 
-// Preview URL until cutover; switch SITE_URL (or this default) to https://subash.org at cutover (PLAN §9).
-const site = process.env.SITE_URL ?? 'https://subash-canapathy.github.io';
+// Preview URL
+const site = process.env.SITE_URL ?? 'https://subash.org';
 
 // Only real pages go in the sitemap: not the style guide, the print page or the old-URL redirect pages.
 /** @param {string} pathname */

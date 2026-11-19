@@ -6,5 +6,5 @@ start: "2008-07"
 end: "2014-12"
 location: Chennai and Seattle
 scope: "Amazon"
-outcome: "Frameworks, test infrastructure and backend development roles over seven years."
+outcome: "Infrastructure engineering, Android/Webkit OSS development, and backend engineering roles over seven years."
 ---

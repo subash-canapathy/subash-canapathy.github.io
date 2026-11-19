@@ -10,3 +10,4 @@ outcome: "Improved catalog security from 82% to 98% across all product types."
 ---
 
 - Drove business strategy, product roadmap and delivery of self-service product ingestion for seller customers.
+- Was responsible for overall catalog security and building the pipeline for vulnerability detection and patching of SaaS software stacks on AWS Marketplace

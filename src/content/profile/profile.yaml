@@ -9,7 +9,6 @@ location: Metro Vancouver, Canada
 links:
   github: "https://github.com/subash-canapathy"
   linkedin: "https://www.linkedin.com/in/subashcanapathy/"
-  # instagram: "https://www.instagram.com/…"
 # Resume PDF only (contact line under the title). Not shown anywhere on the site.
 contact:
   email: "subash.canapathy@gmail.com"
@@ -37,20 +36,20 @@ summary:
 # Intro inside the Work highlights band on the Profile page. The three cards come from src/content/work/.
 highlights_intro:
   title: Work highlights
-  text: "Three launches, three stories, and my reflections on the bet, the architecture, the calls that mattered and what they taught me."
+  text: "Showcase of three v1 product launches, with details on the problem, the architecture, the calls that mattered and what they taught me."
 
 # How I work: share of a typical week. Percents are multiples of 5 and must add up to 100.
 # `line` (optional) replaces `covers` in the row under the chart.
 working_style:
-  - { hat: Strategist, covers: "Product strategy & customer relations", percent: 35 }
-  - { hat: Builder, covers: "Innovation & upskilling", percent: 30 }
-  - { hat: Coach, covers: "People ops", percent: 20 }
-  - { hat: Operator, covers: "Engineering excellence & rhythm of business", percent: 15 }
+  - { hat: Strategist, covers: "Product strategy, Architecture, AI transformation", percent: 35 }
+  - { hat: Builder, covers: "Innovation & AI upskilling, Agentic SDLC", percent: 30 }
+  - { hat: Coach, covers: "People Ops, RoBs, 1:1s", percent: 20 }
+  - { hat: Operator, covers: "Engineering excellence, S/W Factories & Customer relations", percent: 15 }
 
 competencies:
-  AI: [AI transformation, Generative AI, Agentic systems, Inferencing models, Knowledge graphs, AI ROI, Agentic budgeting]
-  Leadership: [Product strategy, Emotional intelligence, Mentoring]
-  Engineering: [Operational excellence, Serverless computing]
+  AI: [Applied AI, Agentic SDLC, Inferencing models, Knowledge graphs, AI ROI, Agentic budgeting]
+  Leadership: [Product strategy, AI transformation, Emotional intelligence, Mentoring]
+  Engineering: [Serverless computing, Distributed systems, Legacy-Agentic migration, AI-native architecture, Generative UI]
 
 # Roles that started before this year are grouped under "Earlier roles".
 earlier_roles_before: 2016

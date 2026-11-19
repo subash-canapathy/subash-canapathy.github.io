@@ -48,8 +48,8 @@ working_style:
 
 competencies:
   AI: [Applied AI, Agentic SDLC, Inferencing models, Knowledge graphs, AI ROI, Agentic budgeting]
-  Leadership: [Product strategy, AI transformation, Emotional intelligence, Mentoring]
-  Engineering: [Serverless computing, Distributed systems, Legacy-Agentic migration, AI-native architecture, Generative UI]
+  Leadership: [Product strategy, AI transformation, Squads Model, Mentoring]
+  Engineering: [Serverless computing, Legacy-Agentic migration, AI-native architecture, Generative UI]
 
 # Roles that started before this year are grouped under "Earlier roles".
 earlier_roles_before: 2016

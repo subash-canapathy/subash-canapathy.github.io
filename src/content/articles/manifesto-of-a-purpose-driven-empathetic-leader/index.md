@@ -38,7 +38,7 @@ Purpose-driven, empathetic leadership is an infinite game and a constant endeavo
 
 ## Embrace entropy & prevent chaos
 
-> Entropy and prioritization changes are constant in a business. I will strive to build the team’s resilience to entropy by preventing it from becoming chaos that leads to churn.
+> Entropy and prioritization changes are constant in a business. I will strive to build the team’s resilience to dealing with entropy while safeguarding them from misaligned entropy that leads to chaos.
 
 ## Make myself redundant
 
